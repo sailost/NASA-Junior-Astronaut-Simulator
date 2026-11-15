@@ -1,0 +1,27 @@
+{
+  "name": "sol-3-base-aurora",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build && node scripts/build-offline.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "preview:art": "tsx scripts/render-gameplay-preview.ts",
+    "test": "tsx --test tests/*.test.ts",
+    "data:fetch": "node --env-file-if-exists=.env.local scripts/fetch-nasa-data.mjs",
+    "data:radlab": "node scripts/fetch-nasa-data.mjs --radlab-only"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^1.1.1",
+    "@types/node": "^24.10.0",
+    "esbuild": "^0.28.2",
+    "happy-dom": "^21.0.4",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1"
+  }
+}
