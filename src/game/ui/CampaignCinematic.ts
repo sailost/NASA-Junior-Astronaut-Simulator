@@ -63,7 +63,7 @@ export class CampaignCinematic {
     this.video.src = `${base}assets/cinematics/${options.source}`;
     this.video.addEventListener("ended", this.onEnded);
     this.video.addEventListener("error", this.onError);
-    host.querySelector(".campaign-cinema-screen")!.addEventListener("pointerdown", this.onTouchSkip);
+    host.querySelector<HTMLElement>(".campaign-cinema-screen")!.addEventListener("pointerdown", this.onTouchSkip);
     document.addEventListener("keydown", this.onKey, true);
     void this.startPlayback();
   }
@@ -108,7 +108,7 @@ export class CampaignCinematic {
     this.video.pause();
     this.video.removeEventListener("ended", this.onEnded);
     this.video.removeEventListener("error", this.onError);
-    this.host.querySelector(".campaign-cinema-screen")?.removeEventListener("pointerdown", this.onTouchSkip);
+    this.host.querySelector<HTMLElement>(".campaign-cinema-screen")?.removeEventListener("pointerdown", this.onTouchSkip);
     document.removeEventListener("keydown", this.onKey, true);
     this.video.removeAttribute("src");
     this.video.load();
