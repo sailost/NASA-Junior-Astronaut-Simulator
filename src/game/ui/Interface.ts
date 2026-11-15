@@ -219,21 +219,51 @@ export class Interface {
       this.help();
     this.root.querySelector<HTMLButtonElement>("#pause-btn")!.onclick = () =>
       this.pause();
-    const touchControls = this.root.querySelector<HTMLElement>("#touch-controls")!;
-    touchControls.addEventListener("pointerdown", (event) => {
-      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-touch-direction]");
-      if (!button) return;
+    const joystick = this.root.querySelector<HTMLElement>("#touch-joystick")!;
+    const joystickKnob = this.root.querySelector<HTMLElement>("#touch-joystick-knob")!;
+    let joystickPointer: number | undefined;
+    const moveJoystick = (event: PointerEvent) => {
+      if (event.pointerId !== joystickPointer) return;
       event.preventDefault();
-      button.setPointerCapture?.(event.pointerId);
-      this.scene.setTouchDirection(button.dataset.touchDirection!, true, event.pointerId);
-    });
-    const releaseTouchDirection = (event: PointerEvent) => {
-      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-touch-direction]");
-      if (button) this.scene.setTouchDirection(button.dataset.touchDirection!, false, event.pointerId);
+      const rect = joystick.getBoundingClientRect();
+      const maxRadius = Math.min(rect.width, rect.height) * 0.3;
+      const originX = rect.left + rect.width / 2;
+      const originY = rect.top + rect.height / 2;
+      let dx = event.clientX - originX;
+      let dy = event.clientY - originY;
+      const distance = Math.hypot(dx, dy);
+      const clampedDistance = Math.min(distance, maxRadius);
+      const ratio = maxRadius ? clampedDistance / maxRadius : 0;
+      const deadZone = 0.12;
+      const amount = ratio <= deadZone ? 0 : (ratio - deadZone) / (1 - deadZone);
+      const directionX = distance ? dx / distance : 0;
+      const directionY = distance ? dy / distance : 0;
+      if (distance > maxRadius && distance > 0) {
+        dx = directionX * maxRadius;
+        dy = directionY * maxRadius;
+      }
+      this.scene.setTouchJoystick(directionX * amount, directionY * amount);
+      joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
     };
-    touchControls.addEventListener("pointerup", releaseTouchDirection);
-    touchControls.addEventListener("pointercancel", releaseTouchDirection);
-    touchControls.addEventListener("lostpointercapture", releaseTouchDirection);
+    joystick.addEventListener("pointerdown", (event) => {
+      if (this.screen !== "game" || this.scene.blocked) return;
+      event.preventDefault();
+      joystickPointer = event.pointerId;
+      joystick.classList.add("is-active");
+      joystick.setPointerCapture?.(event.pointerId);
+      moveJoystick(event);
+    });
+    joystick.addEventListener("pointermove", moveJoystick);
+    const releaseJoystick = (event: PointerEvent) => {
+      if (event.pointerId !== joystickPointer) return;
+      joystickPointer = undefined;
+      joystick.classList.remove("is-active");
+      joystickKnob.style.transform = "translate(-50%, -50%)";
+      this.scene.releaseTouchJoystick();
+    };
+    joystick.addEventListener("pointerup", releaseJoystick);
+    joystick.addEventListener("pointercancel", releaseJoystick);
+    joystick.addEventListener("lostpointercapture", releaseJoystick);
     this.root.querySelector<HTMLButtonElement>("#touch-interact")!.onclick = () => this.scene.requestTouchInteract();
     this.root.querySelector<HTMLButtonElement>("#science-btn")!.onclick = () =>
       this.archive();
@@ -529,7 +559,7 @@ export class Interface {
   private help() {
     this.show(
       "help",
-      `<button class="close" aria-label="Cerrar">×</button><div class="eyebrow">MANUAL DE MISIÓN / 01</div><h2>Procedimientos de operación</h2><p>Mantén a los cuatro tripulantes a salvo durante <b>tres etapas: día, noche y amanecer</b>. La primera práctica de cada consola detiene el reloj para aprender; los siguientes intentos mantienen la colonia en marcha.</p><p class="help-shortcuts"><kbd>J</kbd> Misiones &middot; <kbd>M</kbd> Mapa &middot; <kbd>R</kbd> Reservas &middot; <kbd>H</kbd> Controles &middot; <kbd>C</kbd> Conversar con AURA</p><ol class="instructions"><li><b>Explora con WASD o las flechas; en móvil, usa el pad de dirección.</b> Acércate a una máquina y pulsa E o toca USAR. El plano muestra dónde estás.</li><li><b>Investiga en el laboratorio.</b> Recoge planta en el Invernadero y agua en Soporte vital; el suelo ya está en el Laboratorio. Coloca cada muestra y calibra el escáner. Los resultados se guardan solos.</li><li><b>Prepara la noche.</b> Planta, cosecha y optimiza paneles. Sin Sol, las baterías se vacían.</li><li><b>Responde a las alertas.</b> Repara las máquinas en su habitación. Ante el aviso solar, activa el refugio.</li><li><b>Envía tu informe.</b> Alinea la antena en control y espera la confirmación de la Tierra antes del final.</li></ol><p class="science-note">La pausa y el archivo detienen el reloj. Los números del juego son simulados. El archivo identifica los datos reales y sus fuentes.</p><button id="repeat-tutorial" class="full secondary" ${this.returnScreen === "menu" ? "disabled" : ""}>Repetir tutorial${this.returnScreen === "menu" ? " · inicia una misión primero" : ""}</button><button class="primary" id="ready">Entendido </button>`,
+      `<button class="close" aria-label="Cerrar">×</button><div class="eyebrow">MANUAL DE MISIÓN / 01</div><h2>Procedimientos de operación</h2><p>Mantén a los cuatro tripulantes a salvo durante <b>tres etapas: día, noche y amanecer</b>. La primera práctica de cada consola detiene el reloj para aprender; los siguientes intentos mantienen la colonia en marcha.</p><p class="help-shortcuts"><kbd>J</kbd> Misiones &middot; <kbd>M</kbd> Mapa &middot; <kbd>R</kbd> Reservas &middot; <kbd>H</kbd> Controles &middot; <kbd>C</kbd> Conversar con AURA</p><ol class="instructions"><li><b>Explora con WASD o las flechas; en móvil, usa el joystick virtual.</b> Acércate a una máquina y pulsa E o toca USAR. El plano muestra dónde estás.</li><li><b>Investiga en el laboratorio.</b> Recoge planta en el Invernadero y agua en Soporte vital; el suelo ya está en el Laboratorio. Coloca cada muestra y calibra el escáner. Los resultados se guardan solos.</li><li><b>Prepara la noche.</b> Planta, cosecha y optimiza paneles. Sin Sol, las baterías se vacían.</li><li><b>Responde a las alertas.</b> Repara las máquinas en su habitación. Ante el aviso solar, activa el refugio.</li><li><b>Envía tu informe.</b> Alinea la antena en control y espera la confirmación de la Tierra antes del final.</li></ol><p class="science-note">La pausa y el archivo detienen el reloj. Los números del juego son simulados. El archivo identifica los datos reales y sus fuentes.</p><button id="repeat-tutorial" class="full secondary" ${this.returnScreen === "menu" ? "disabled" : ""}>Repetir tutorial${this.returnScreen === "menu" ? " · inicia una misión primero" : ""}</button><button class="primary" id="ready">Entendido </button>`,
       true,
     );
     this.closeButton();

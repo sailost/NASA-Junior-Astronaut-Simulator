@@ -20,9 +20,11 @@ export function moveAstronaut(
   speed: number,
   canWalk: (x: number, y: number) => boolean,
 ) {
-  const magnitude = Math.hypot(input.x, input.y);
-  const tx = magnitude ? (input.x / magnitude) * speed : 0,
-    ty = magnitude ? (input.y / magnitude) * speed : 0;
+  const rawMagnitude = Math.hypot(input.x, input.y);
+  const magnitude = Math.min(rawMagnitude, 1);
+  const inputScale = rawMagnitude > 1 ? speed / rawMagnitude : speed;
+  const tx = input.x * inputScale,
+    ty = input.y * inputScale;
   let remaining = Math.max(0, Math.min(dt, 0.1)),
     distance = 0;
   const startX = position.x,

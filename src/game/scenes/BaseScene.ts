@@ -38,7 +38,7 @@ export class BaseScene extends Phaser.Scene {
   private shade!: Phaser.GameObjects.Rectangle;
   private astronaut?: Astronaut;
   private motion = idleMotion();
-  private touchDirections = new Map<number, string>();
+  private touchJoystick = { x: 0, y: 0 };
   private touchInteractPending = false;
   private lastStep = 0;
   private lastAlert = 0;
@@ -109,9 +109,16 @@ export class BaseScene extends Phaser.Scene {
     this.cameras.main.setZoom(view.zoom);
     this.cameras.main.setDeadzone?.(view.deadzone.width, view.deadzone.height);
   }
-  setTouchDirection(direction: string, pressed: boolean, pointerId: number) {
-    if (pressed && !this.blocked) this.touchDirections.set(pointerId, direction);
-    else if (this.touchDirections.get(pointerId) === direction) this.touchDirections.delete(pointerId);
+  setTouchJoystick(x: number, y: number) {
+    if (this.blocked) return;
+    const magnitude = Math.hypot(x, y);
+    const scale = magnitude > 1 ? 1 / magnitude : 1;
+    this.touchJoystick.x = x * scale;
+    this.touchJoystick.y = y * scale;
+  }
+  releaseTouchJoystick() {
+    this.touchJoystick.x = 0;
+    this.touchJoystick.y = 0;
   }
   requestTouchInteract() {
     if (!this.blocked && this.nearest) this.touchInteractPending = true;
@@ -162,13 +169,12 @@ export class BaseScene extends Phaser.Scene {
     const dt = Math.min(delta / 1000, 0.1);
     this.sim.tick(dt);
     if (!this.blocked && (!this.sim.paused || this.tutorialMovement) && this.sim.status === "playing") {
-      const touch = new Set(this.touchDirections.values());
       let dx =
-          Number(this.keys.D.isDown || this.keys.RIGHT.isDown || touch.has("right")) -
-          Number(this.keys.A.isDown || this.keys.LEFT.isDown || touch.has("left")),
+          Number(this.keys.D.isDown || this.keys.RIGHT.isDown) -
+          Number(this.keys.A.isDown || this.keys.LEFT.isDown) + this.touchJoystick.x,
         dy =
-          Number(this.keys.S.isDown || this.keys.DOWN.isDown || touch.has("down")) -
-          Number(this.keys.W.isDown || this.keys.UP.isDown || touch.has("up"));
+          Number(this.keys.S.isDown || this.keys.DOWN.isDown) -
+          Number(this.keys.W.isDown || this.keys.UP.isDown) + this.touchJoystick.y;
       const moved = moveAstronaut(
         this.player,
         this.motion,
@@ -200,7 +206,7 @@ export class BaseScene extends Phaser.Scene {
       }
     }
     if (this.blocked || (this.sim.paused && !this.tutorialMovement) || this.sim.status !== "playing") {
-      this.touchDirections.clear();
+      this.releaseTouchJoystick();
       this.touchInteractPending = false;
       this.motion.vx = 0;
       this.motion.vy = 0;
