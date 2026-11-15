@@ -10,10 +10,20 @@ export class StationAudio {
   context?: AudioContext;
   muted = localStorage.getItem("aurora-muted") === "true";
   private master?: GainNode;
+  private menuConfirm: HTMLAudioElement;
   private buffers = new Map<SoundId, AudioBuffer>();
   private loading?: Promise<void>;
   private ambience?: AudioBufferSourceNode;
   private ambienceGain?: GainNode;
+
+  constructor() {
+    const base = import.meta.env?.BASE_URL || "./";
+    this.menuConfirm = new Audio(`${base}assets/audio/menu_ok.wav`);
+    this.menuConfirm.preload = "auto";
+    this.menuConfirm.volume = 0.72;
+    this.menuConfirm.muted = this.muted;
+    this.menuConfirm.load();
+  }
 
   unlock() {
     if (!this.context) {
@@ -52,7 +62,15 @@ export class StationAudio {
   toggle() {
     this.muted = !this.muted;
     localStorage.setItem("aurora-muted", String(this.muted));
+    this.menuConfirm.muted = this.muted;
     if (this.master && this.context) this.master.gain.setTargetAtTime(this.muted ? 0 : 0.8, this.context.currentTime, 0.04);
+  }
+
+  /** Persona's confirm click is reserved for buttons on the title menu. */
+  playMenuConfirm() {
+    if (this.muted) return;
+    try { this.menuConfirm.currentTime = 0; } catch { /* Metadata may still be loading. */ }
+    void this.menuConfirm.play().catch(() => {});
   }
 
   play(id: SoundId) {
@@ -91,5 +109,8 @@ export class StationAudio {
   }
 
   /** Release the audio context when the page is hidden. */
-  suspend() { if (this.context) void this.context.suspend(); }
+  suspend() {
+    if (this.context) void this.context.suspend();
+    this.menuConfirm.pause();
+  }
 }

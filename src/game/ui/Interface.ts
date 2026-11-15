@@ -278,6 +278,11 @@ export class Interface {
       }
     });
     this.root.addEventListener("click", (e) => {
+      if (!(e.target as HTMLElement).closest("button")) return;
+      if (this.screen === "menu") this.audio.playMenuConfirm();
+      else this.audio.tone();
+    }, true);
+    this.root.addEventListener("click", (e) => {
       const track = (e.target as HTMLElement).closest<HTMLElement>(
         "[data-track]",
       );
@@ -285,7 +290,6 @@ export class Interface {
         this.trackedId = track.dataset.track;
         this.renderMissions();
       }
-      if ((e.target as HTMLElement).closest("button")) this.audio.tone();
     });
   }
   private refreshTutorial() {
