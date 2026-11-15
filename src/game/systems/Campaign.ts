@@ -3,27 +3,57 @@ import type { SampleId } from "./Expedition";
 import type { Objective } from "./objectives";
 import type { SystemId } from "./events";
 export type CampaignOutcome = "victory" | "partial" | "defeat";
+export interface CampaignScenario {
+  id: "dust" | "water" | "cold" | "air" | "garden" | "relay" | "crew" | "solar";
+  title: string;
+  briefing: string;
+  solarFactor: number;
+  nightLoad: number;
+  initialWater: number;
+  initialEnergy: number;
+  initialOxygen: number;
+  nightRisk: SystemId;
+  powerObjective: string;
+  source: { label: string; url: string };
+  scienceNote: string;
+}
 export const campaignSources = {
   plants: { label: "CSA · Producción de alimentos", url: "https://www.asc-csa.gc.ca/eng/youth-educators/toolkits/food-production/" },
   water: { label: "NASA · Recuperación de agua en la ISS", url: "https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/" },
-  soil: { label: "NASA · Sistemas de cultivo PONDS", url: "https://technology.nasa.gov/advancing-commercial-space/habitation_systems" },
+  soil: { label: "NASA · Sistema hidropónico PONDS", url: "https://technology.nasa.gov/patent/KSC-TOPS-81" },
 };
+const solarSource = { label: "NASA CCMC · DONKI", url: "https://ccmc.gsfc.nasa.gov/tools/DONKI/" };
+const scenarios: CampaignScenario[] = [
+  { id: "dust", title: "Polvo sobre los paneles", briefing: "Una tormenta de polvo ficticia reduce la captación solar. Compara invertir en los paneles o guardar energía para la noche.", solarFactor: .72, nightLoad: 0, initialWater: 78, initialEnergy: 72, initialOxygen: 82, nightRisk: "power", powerObjective: "Compensa la pérdida de captación solar", source: { label: "NASA · Tormentas de polvo marcianas", url: "https://science.nasa.gov/solar-system/planets/mars/10-things-dust-in-the-wind-on-mars-and-well-beyond/" }, scienceNote: "El polvo y las tormentas existen en Marte; la pérdida de energía y la intensidad de esta tormenta son parámetros del juego." },
+  { id: "water", title: "Reserva de agua limitada", briefing: "La reserva inicial es menor en este escenario simulado. Tu estrategia de riego y recuperación tendrá más peso.", solarFactor: 1, nightLoad: 0, initialWater: 56, initialEnergy: 72, initialOxygen: 82, nightRisk: "water", powerObjective: "Reserva energía para recuperar agua", source: campaignSources.water, scienceNote: "La NASA estudia recuperación de agua en la ISS; esta colonia usa valores propios, no cifras trasladadas desde la estación." },
+  { id: "cold", title: "Noche fría simulada", briefing: "El escenario añade carga eléctrica durante la noche. Compara captación y ahorro antes de que se apaguen los paneles.", solarFactor: 1, nightLoad: .055, initialWater: 78, initialEnergy: 66, initialOxygen: 82, nightRisk: "power", powerObjective: "Calcula una reserva para la noche fría", source: { label: "NASA · Temperaturas en el sistema solar", url: "https://science.nasa.gov/solar-system/temperatures-across-our-solar-system/" }, scienceNote: "La noche y las temperaturas de Marte motivan el reto; la carga térmica exacta es una simplificación del juego." },
+  { id: "air", title: "Alerta en el circuito de aire", briefing: "La reserva de oxígeno empieza más baja y la señal apunta a una válvula. Diagnostica antes de gastar un repuesto.", solarFactor: 1, nightLoad: 0, initialWater: 78, initialEnergy: 76, initialOxygen: 64, nightRisk: "oxygen", powerObjective: "Guarda energía para el soporte vital", source: { label: "NASA · Sistemas de soporte vital", url: "https://www.nasa.gov/reference/jsc-life-support-subsystems/" }, scienceNote: "El soporte vital mantiene condiciones habitables; la reserva y la avería de esta colonia son simuladas." },
+  { id: "garden", title: "Invernadero con riego irregular", briefing: "El cultivo depende de luz, agua y un circuito operativo. Esta noche la señal puede venir del invernadero.", solarFactor: .92, nightLoad: 0, initialWater: 83, initialEnergy: 73, initialOxygen: 82, nightRisk: "greenhouse", powerObjective: "Asegura energía para luz y riego", source: { label: "NASA eClips · Plantas en el espacio", url: "https://science.nasa.gov/eclips/videos/plants-in-space/" }, scienceNote: "Las plantas necesitan luz y agua; el fallo de riego y las tasas de crecimiento son del modelo de Base Aurora." },
+  { id: "relay", title: "Ventana de comunicación con Tierra", briefing: "La antena necesitará mantenimiento durante la noche. Decide cuánto presupuesto conservar para poder reparar y enviar resultados.", solarFactor: 1, nightLoad: 0, initialWater: 78, initialEnergy: 64, initialOxygen: 82, nightRisk: "comms", powerObjective: "Reserva energía para la antena", source: { label: "NASA · Red de retransmisión de Marte", url: "https://science.nasa.gov/mars/mars-relay-network/" }, scienceNote: "Las misiones usan orbitadores para retransmitir datos y existe demora entre planetas; la avería y el coste de reparación son ficticios." },
+  { id: "crew", title: "Rutina de salud de la tripulación", briefing: "La reserva de alimentos es menor. Equilibra la producción del cultivo con el soporte vital y revisa el consumo durante la noche.", solarFactor: 1, nightLoad: 0, initialWater: 78, initialEnergy: 73, initialOxygen: 82, nightRisk: "oxygen", powerObjective: "Equilibra energía para cultivo y soporte vital", source: { label: "NASA OSDR · Investigación de salud espacial", url: "https://osdr.nasa.gov/" }, scienceNote: "OSDR reúne investigaciones de salud y biología espacial; el estado de esta tripulación no es un resultado de esos estudios." },
+  { id: "solar", title: "Vigila el entorno solar", briefing: "Practicarás un protocolo preventivo y consultarás DONKI como referencia científica. La alerta y el riesgo de Base Aurora son simulados.", solarFactor: 1, nightLoad: .025, initialWater: 78, initialEnergy: 70, initialOxygen: 82, nightRisk: "power", powerObjective: "Prepara energía para el protocolo preventivo", source: solarSource, scienceNote: "Este paquete no incluye registros DONKI. Cuando se consulte un evento histórico, este servirá como contexto: no predice por sí solo la radiación en Marte ni una dosis para la base." },
+];
 export interface Evidence { sample: SampleId; observation: string; interpretation: string; decision?: string; source: { label: string; url: string }; }
 export interface CampaignCheckpoint { level: number; time: number; resources: Simulation["resources"]; systems: Simulation["systems"]; decisions: string[]; evidence: Evidence[]; }
 /** Narrative progress observes the existing simulator; snapshots never replace live resources. */
 export class Campaign {
+  readonly scenario: CampaignScenario;
+  constructor(seed = 0) { this.scenario = scenarios[Math.abs(Math.trunc(seed)) % scenarios.length]; }
   level: 1 | 2 | 3 = 1;
   elapsed = 0;
   pending?: "sol2" | "sol3";
   evidence: Evidence[] = [];
   plantPlan?: "economy" | "growth";
   waterPlan?: "recovery" | "reserve";
+  powerPlan?: "reserve" | "upgrade";
   soilPlan?: "isolate" | "condition";
   nightRisk: SystemId = "oxygen";
   diagnosed = false;
   nightRepaired = false;
   solarStarted = false;
   protectedDuringAlert = false;
+  solarRiskAccepted = false;
+  nightRepairPlan?: "full" | "bypass";
   partialReport = false;
   checkpoints: CampaignCheckpoint[] = [];
   criticalHistory: string[] = [];
@@ -62,14 +92,18 @@ export class Campaign {
     return { id: "energy", title: "preparar una reserva nocturna viable en la Sala de Máquinas" };
   }
   actionLock(action: string, sim: Simulation): string | undefined {
+    if (action.startsWith("repair:")) {
+      const system = action.slice(7) as SystemId;
+      if (!sim.systems[system] && this.level === 2 && system === this.nightRisk && !this.diagnosed) return "Compara primero la señal con el equipo antes de gastar 5 energía y un repuesto.";
+      if (sim.systems[system]) return;
+    }
     if (this.level !== 1) return;
     if (this.pending) return "El nivel ya terminó. Continúa la transición para avanzar.";
-    if (action.startsWith("repair:") && !sim.systems[action.slice(7) as SystemId]) return;
     const step = this.firstLevelStep(sim);
     const allowed: Record<string, string[]> = { sample: ["collect-plant"], analysis: ["research"], decision: ["campaign-plant-economy", "campaign-plant-growth"], trial: ["plant"], energy: ["battery-reserve", "upgrade", "allocation"] };
     if (!allowed[step.id].includes(action)) return `Primero debes ${step.title}. Las siguientes misiones se desbloquean en orden.`;
   }
-  get decisions() { return [this.plantPlan && `Cultivo: ${this.plantPlan === "economy" ? "ahorro de agua" : "crecimiento intensivo"}`, this.waterPlan && `Agua: ${this.waterPlan === "recovery" ? "más recuperación, más carga eléctrica" : "menor consumo de tripulación"}`, this.soilPlan && `Sustrato: ${this.soilPlan === "isolate" ? "circuito aislado" : "acondicionado"}`].filter(Boolean) as string[]; }
+  get decisions() { return [this.powerPlan && `Energía: ${this.powerPlan === "reserve" ? "reserva nocturna" : "paneles optimizados"}`, this.plantPlan && `Cultivo: ${this.plantPlan === "economy" ? "ahorro de agua" : "crecimiento intensivo"}`, this.nightRepairPlan && `Avería: ${this.nightRepairPlan === "full" ? "reparación completa, 100 % de producción" : "puente temporal, 55 % de producción sin repuesto"}`, this.waterPlan && `Agua: ${this.waterPlan === "recovery" ? "más recuperación, más carga eléctrica" : "menor consumo de tripulación"}`, this.solarRiskAccepted && "Protocolo solar: exposición simulada aceptada; informe parcial", this.soilPlan && `Sustrato: ${this.soilPlan === "isolate" ? "circuito aislado" : "acondicionado"}`].filter(Boolean) as string[]; }
   checkpoint(sim: Simulation) {
     const snapshot: CampaignCheckpoint = { level: this.level, time: sim.time, resources: { ...sim.resources }, systems: { ...sim.systems }, decisions: [...this.decisions], evidence: this.evidence.map((e) => ({ ...e, source: { ...e.source } })) };
     this.checkpoints.push(snapshot); return snapshot;
@@ -85,7 +119,7 @@ export class Campaign {
     sim.note(`EVIDENCIA ${sample}: ${definitions[sample][1]}`);
   }
   nightForecast(sim: Simulation) {
-    const load = .12 + .055 * (sim.allocation === "science" ? 5 : 4) + (sim.crop >= 0 ? .035 : 0) - (sim.expedition.reserveMode ? .05 : 0) + (this.waterPlan === "recovery" ? .04 : 0);
+    const load = .12 + .055 * (sim.allocation === "science" ? 5 : 4) + (sim.crop >= 0 ? .035 : 0) - (sim.expedition.reserveMode ? .05 : 0) + (this.waterPlan === "recovery" ? .04 : 0) + this.scenario.nightLoad;
     const provision = (sim.expedition.results.includes("water") ? 0 : 12) + (this.solarStarted ? 0 : 6) + (this.nightRepaired ? 0 : 5);
     return sim.resources.energy - load * 90 - provision;
   }
@@ -93,6 +127,25 @@ export class Campaign {
     if (!action.startsWith("campaign-")) return;
     const locked = this.actionLock(action, sim); if (locked) return locked;
     if (this.pending || sim.status !== "playing") return "Termina la transición antes de continuar.";
+    if (action === "campaign-bypass") {
+      if (this.level !== 2 || !this.diagnosed || !this.nightFaultStarted || sim.systems[this.nightRisk]) return "Primero interpreta la señal y confirma qué sistema falló.";
+      if (!sim.spend(3)) return "Necesitas 3 de energía para alimentar el puente temporal.";
+      sim.systems[this.nightRisk] = true;
+      sim.systemEfficiency[this.nightRisk] = .55;
+      this.nightRepairPlan = "bypass";
+      for (const event of sim.activeEvents) if (event.system === this.nightRisk) { event.resolved = true; event.remaining = 0; }
+      sim.note(`Decisión: puente temporal en ${this.nightRisk}. −3 energía, sin repuesto; el sistema vuelve al 55 % de producción.`);
+      return "Puente temporal conectado. El equipo vuelve al 55 % y conserva el repuesto; una reparación completa recuperaría toda su producción.";
+    }
+    if (action === "campaign-accept-exposure") {
+      if (this.level !== 2 || !this.solarStarted || sim.shielded || !sim.activeEvents.some((event) => event.system === "solar")) return "El aviso solar no está activo o la tripulación ya está protegida.";
+      this.solarRiskAccepted = true;
+      const event = sim.activeEvents.find((item) => item.system === "solar");
+      if (event) { event.resolved = true; event.remaining = 0; }
+      sim.resources.radiation = Math.min(100, sim.resources.radiation + 18);
+      sim.note("Decisión: mantener los equipos activos fuera del refugio. La exposición sube 18 puntos en la escala simulada 0–100; el informe no podrá obtener victoria completa.");
+      return "Elegiste mantener los equipos activos. La exposición subió 18 puntos simulados y la decisión quedará registrada; la tripulación no recibió protección.";
+    }
     if (action.startsWith("campaign-inspect-")) {
       const system = action.slice(17);
       if (this.level !== 2) return "El diagnóstico nocturno aún no está disponible.";
@@ -128,12 +181,14 @@ export class Campaign {
     sim.note(`DECISIÓN: ${this.decisions.at(-1)}. Los consumos y el crecimiento cambian desde ahora.`);
     return `${this.decisions.at(-1)}. Observa ahora la tendencia de reservas y cultivo para comprobar el efecto.`;
   }
-  get riskSignal() { return this.nightRisk === "power" ? "la alimentación cae y se detiene la recuperación de las reservas" : this.nightRisk === "water" ? "el filtro pierde caudal y deja de recuperar agua" : "la válvula pierde caudal y deja de reponer oxígeno"; }
+  get riskSignal() { return ({ power: "la alimentación cae y se detiene la recuperación de las reservas", water: "el filtro pierde caudal y deja de recuperar agua", oxygen: "la válvula pierde caudal y deja de reponer oxígeno", greenhouse: "la luz y el riego del cultivo se interrumpen", comms: "la antena pierde la señal de retransmisión" } as Record<SystemId, string>)[this.nightRisk]; }
+  get riskStation() { return ({ power: "power", oxygen: "oxygen", water: "water", greenhouse: "greenhouse", comms: "comms" } as Record<SystemId, string>)[this.nightRisk]; }
+  get riskRoom() { return ({ power: "SALA DE MÁQUINAS", oxygen: "SOPORTE VITAL", water: "SOPORTE VITAL", greenhouse: "INVERNADERO", comms: "CENTRO DE CONTROL" } as Record<SystemId, string>)[this.nightRisk]; }
   advance(sim: Simulation) {
     if (!this.pending || sim.status !== "playing") return false;
     this.level = this.pending === "sol2" ? 2 : 3; this.pending = undefined; this.elapsed = 0;
     if (this.level === 2) {
-      this.nightRisk = sim.resources.energy < 40 ? "power" : sim.resources.water < 70 ? "water" : "oxygen";
+      this.nightRisk = this.scenario.nightRisk;
       this.nightFaultStarted = true; sim.trigger(this.nightRisk);
       sim.note(`SEÑAL NOCTURNA: ${this.riskSignal}. Inspecciona el circuito señalado; el diagnóstico pertenece a este escenario simulado.`);
     } else sim.note("Tierra solicita una conclusión: utiliza las evidencias de cultivo y agua para escoger una configuración de sustrato y demostrar su funcionamiento.");
@@ -157,7 +212,8 @@ export class Campaign {
       this.finalTrialGrowth = sim.crop;
     }
     const dayComplete = this.level === 1 && !!this.plantPlan && sim.crop >= 0 && sim.expedition.batteriesReady && this.nightForecast(sim) >= 8;
-    const nightComplete = this.level === 2 && this.nightRepaired && this.diagnosed && !!this.waterPlan && this.protectedDuringAlert;
+    const solarEventClear = !sim.activeEvents.some((event) => event.system === "solar");
+    const nightComplete = this.level === 2 && this.nightRepaired && this.diagnosed && !!this.waterPlan && (this.protectedDuringAlert || this.solarRiskAccepted && solarEventClear);
     if (nightComplete) {
       for (const event of sim.activeEvents) if (event.system === "solar") { event.resolved = true; event.remaining = 0; }
     }
@@ -179,31 +235,29 @@ export class Campaign {
     const e = sim.expedition;
     const analysis = (sample: SampleId, label: string) => make(`analyze-${sample}`, `Investiga ${label}`, "research", "LABORATORIO", `Coloca la muestra, calibra el escáner y lee su evidencia. ${sample === "plant" ? "La comparación servirá para elegir riego y crecimiento." : sample === "water" ? "Utiliza el resultado para decidir cómo conservar agua durante la noche." : "Compara configuraciones antes de aplicar el ensayo final."}`, e.results.includes(sample), e.processing === sample ? `PROCESANDO · ${Math.ceil(e.remaining)} s · puedes atender otro equipo` : `${sim.research}/3 evidencias`);
     const list = this.level === 1 ? [
-      make("collect-plant", "Recoge una hoja en el Invernadero", "greenhouse", "INVERNADERO", "Una muestra es una pequeña parte de una planta: aquí recogemos una hoja. La llevaremos al Laboratorio para empezar una prueba sobre el cuidado del cultivo.", e.collected.plant),
-      analysis("plant", "el equilibrio entre riego y crecimiento"),
+      make("analyze-plant", "Diseña, elige y planta un cultivo", "greenhouse", "INVERNADERO", "Recoge una hoja, estúdiala en el Laboratorio y decide entre ahorrar agua o acelerar el crecimiento. Planta con el plan elegido para ver su efecto.", e.results.includes("plant") && !!this.plantPlan && sim.crop >= 0, e.processing === "plant" ? `PROCESANDO · ${Math.ceil(e.remaining)} s` : !e.collected.plant ? "E · RECOGER HOJA" : !e.results.includes("plant") ? "LLEVAR AL LABORATORIO" : !this.plantPlan ? "ELEGIR PLAN DE RIEGO" : "E · PLANTAR Y OBSERVAR"),
       make("plant-plan", "Aplica una estrategia de cultivo", "research", "LABORATORIO", "Lee las dos alternativas del ensayo simulado. Elige ahorro de agua o mayor crecimiento: cambiarán el consumo y el rendimiento.", !!this.plantPlan),
       make("plant-trial", "Planta con el riego elegido", "greenhouse", "INVERNADERO", "Ve al Invernadero y pulsa Plantar. Se aplicará el riego que elegiste; el cultivo necesitará agua y electricidad para crecer.", sim.crop >= 0, sim.crop >= 0 ? "CULTIVO INICIADO" : "E · PLANTAR"),
-      make("batteries", "Asegura una reserva nocturna viable", "power", "SALA DE MÁQUINAS", "Compara el pronóstico de 90 s sin generación solar. Configura ahorro nocturno o mejora paneles de día; la previsión debe conservar al menos 8 de energía.", e.batteriesReady && this.nightForecast(sim) >= 8, `Previsión simulada: ${Math.floor(this.nightForecast(sim))} energía`),
+      make("batteries", this.scenario.powerObjective, "power", "SALA DE MÁQUINAS", "Compara el pronóstico de 90 s sin generación solar y ten en cuenta el escenario activo. Configura ahorro nocturno o mejora paneles de día; la previsión debe conservar al menos 8 de energía.", e.batteriesReady && this.nightForecast(sim) >= 8, `Previsión simulada: ${Math.floor(this.nightForecast(sim))} energía`),
     ] : this.level === 2 ? [
-      make("diagnose-night", "Interpreta la señal nocturna", this.nightRisk, this.nightRisk === "power" ? "SALA DE MÁQUINAS" : "SOPORTE VITAL", `Síntoma: ${this.riskSignal}. Inspecciona ese equipo antes de gastar repuestos.`, this.diagnosed),
-      make("restore-night", "Recupera la producción que falta", this.nightRisk, this.nightRisk === "power" ? "SALA DE MÁQUINAS" : "SOPORTE VITAL", "Comprueba la avería y restaura su circuito. Observa después el cambio de tendencia en las reservas.", this.nightRepaired),
+      make("diagnose-night", `Sigue la señal hasta ${this.nightRisk === "comms" ? "la antena" : this.nightRisk === "greenhouse" ? "el cultivo" : "el circuito correcto"}`, this.riskStation, this.riskRoom, `Síntoma: ${this.riskSignal}. Inspecciona ese equipo antes de gastar repuestos.`, this.diagnosed),
+      make("restore-night", "Recupera la producción que falta", this.riskStation, this.riskRoom, "Comprueba la avería y restaura su circuito. Observa después el cambio de tendencia en las reservas.", this.nightRepaired),
       make("collect-water", "Obtén evidencia del reciclaje", "water", "SOPORTE VITAL", "Recoge una muestra con el reciclador operativo. Compararemos recuperación y consumo energético.", e.collected.water),
       analysis("water", "la autonomía del agua"),
       make("water-plan", "Decide cómo conservar el agua", "research", "LABORATORIO", "Aplica la evidencia: aumentar recuperación consume más electricidad; reducir demanda ahorra agua sin acelerar su producción.", !!this.waterPlan),
-      make("night-protection", "Aplica el protocolo y supera la noche", "shelter", "REFUGIO", "Tras la reparación se activará un ejercicio preventivo con aviso. Atiende el refugio y termina la investigación durante el protocolo.", this.solarStarted && !sim.activeEvents.some((event) => event.system === "solar"), this.solarStarted ? sim.shielded ? "TRIPULACIÓN A CUBIERTO · protocolo en curso" : "CONSULTA EL AVISO SOLAR" : "EL PROTOCOLO AÚN NO ESTÁ ACTIVO"),
+      make("night-protection", "Elige cómo enfrentar el aviso solar", "shelter", "REFUGIO", "Cuando llegue el aviso, compara gastar energía en el refugio o mantener los equipos activos y aceptar exposición simulada. Esa elección cambia el informe final.", this.protectedDuringAlert || this.solarRiskAccepted && !sim.activeEvents.some((event) => event.system === "solar"), this.solarStarted ? sim.shielded ? "TRIPULACIÓN A CUBIERTO · protocolo en curso" : this.solarRiskAccepted ? "EXPOSICIÓN ACEPTADA · REGISTRO ACTIVO" : "ELIGE REFUGIO O ACEPTA EL RIESGO" : "EL PROTOCOLO AÚN NO ESTÁ ACTIVO"),
     ] : [
       analysis("soil", "la configuración del sustrato"),
-      make("soil-plan", "Aplica lo aprendido al sustrato", "research", "LABORATORIO", "Escoge entre aislar el circuito hidropónico o acondicionar el sustrato experimental. Compara costes y efectos; no son mediciones de suelo marciano real.", !!this.soilPlan),
-      make("verify-trial", "Comprueba cómo está creciendo la planta", "greenhouse", "INVERNADERO", "Ve al Invernadero y pulsa Comprobar crecimiento. Así registrarás si la planta creció después del cambio; si ya cosechaste, planta de nuevo.", this.verifiedTrial),
+      make("soil-plan", "Prueba y verifica el cultivo", "research", "LABORATORIO", "Estudia el material donde crecen las raíces, elige cómo preparar el sustrato y ve al Invernadero a comprobar qué ocurrió con la planta.", !!this.soilPlan && this.verifiedTrial),
       make("report", "Envía a Tierra lo que aprendiste", "comms", "CENTRO DE CONTROL", "Alinea la antena y envía los resultados. La confirmación llegará después; enviar el informe completa este objetivo.", sim.report !== "none", sim.report === "pending" ? `CONFIRMACIÓN EN ${Math.ceil(Math.max(0, sim.reportDue - sim.time))} s` : "INFORME PREPARADO"),
     ];
     // Group related operations into complete problems, rather than a quest per click.
-    const grouped = list.filter((o) => !["plant-plan", "diagnose-night", "collect-water", "analyze-water", "analyze-soil"].includes(o.id)).map((o) => {
-      if (o.id === "analyze-plant") return { ...o, title: "Estudia la hoja y elige cómo regar", done: e.results.includes("plant") && !!this.plantPlan, instruction: !e.results.includes("plant") ? "Lleva la hoja al Laboratorio. El lector inicia una prueba del juego para comparar dos formas de regar antes de plantar." : "La prueba terminó. Elige usar menos agua o dar prioridad al crecimiento; esa elección se aplicará cuando plantes." };
-      if (o.id === "restore-night") return { ...o, title: "Diagnostica y restaura el soporte vital", done: this.diagnosed && (this.nightRepaired || this.nightFaultStarted && sim.systems[this.nightRisk]), instruction: `Síntoma: ${this.riskSignal}. Inspecciona el circuito y repáralo para recuperar su producción; una reparación sin diagnóstico no explica el problema.` };
+    const grouped = list.filter((o) => !["collect-plant", "plant-plan", "plant-trial", "diagnose-night", "collect-water", "analyze-water", "analyze-soil", "verify-trial"].includes(o.id)).map((o) => {
+      if (o.id === "analyze-plant") return { ...o, done: e.results.includes("plant") && !!this.plantPlan && sim.crop >= 0, stationId: !e.collected.plant ? "greenhouse" : !e.results.includes("plant") ? "research" : !this.plantPlan ? "research" : "greenhouse", room: !e.collected.plant || this.plantPlan ? "INVERNADERO" : "LABORATORIO", instruction: !e.collected.plant ? "Recoge una hoja en el Invernadero. La llevaremos al Laboratorio para comparar dos formas de regar." : !e.results.includes("plant") ? "Lleva la hoja al Laboratorio y calibra el escáner para comparar riego y crecimiento." : !this.plantPlan ? "Elige en el Laboratorio: ahorrar agua o dar prioridad al crecimiento. Cada opción cambia el consumo y el rendimiento." : "Planta con el plan elegido y observa cómo responde el cultivo." };
+      if (o.id === "restore-night") return { ...o, title: `Diagnostica y restaura ${this.nightRisk === "greenhouse" ? "el invernadero" : this.nightRisk === "comms" ? "la antena" : "el soporte vital"}`, done: this.diagnosed && (this.nightRepaired || this.nightFaultStarted && sim.systems[this.nightRisk]), instruction: `Síntoma: ${this.riskSignal}. Inspecciona y elige: reparación completa con repuesto, o puente temporal con menos energía y menor producción.` };
       if (o.id === "water-plan") return { ...o, title: "Asegura el agua de la noche", stationId: e.collected.water ? "research" : "water", room: e.collected.water ? "LABORATORIO" : "SOPORTE VITAL", instruction: !e.collected.water ? "Recoge agua del reciclador en Soporte vital. La llevamos al Laboratorio para comparar recuperación y gasto eléctrico, antes de elegir cómo conservarla." : !e.results.includes("water") ? "Lleva el agua al Laboratorio y calibra el análisis. Queremos decidir cómo sostener el agua sin agotar la electricidad." : o.instruction };
-      if (o.id === "night-protection") return { ...o, title: "Protege a la tripulación y despeja la base", done: this.protectedDuringAlert, instruction: "Activa el refugio durante el protocolo. Resolver las tres misiones elimina los marcianitos ficticios y permite que amanezca; no necesitas esperar un reloj.", progress: this.protectedDuringAlert ? "PROTECCIÓN APLICADA" : "REFUGIO · PROTOCOLO DE SEGURIDAD" };
-      if (o.id === "soil-plan") return { ...o, title: "Prepara el material donde crecen las raíces", instruction: !e.results.includes("soil") ? "El sustrato es el material donde crecen las raíces. Estudia en el Laboratorio el material que ya está guardado y decide cómo preparar el cultivo." : "Elige cómo preparar el material o el circuito de agua del cultivo. Compara lo que cuesta cada opción." };
+      if (o.id === "night-protection") return { ...o, title: "Elige cómo enfrentar el aviso solar", done: this.protectedDuringAlert || this.solarRiskAccepted && !sim.activeEvents.some((event) => event.system === "solar"), instruction: "En el Refugio decide si gastas 6 de energía para proteger a la tripulación o mantienes los equipos activos y aceptas una exposición simulada; la segunda ruta limita el desenlace.", progress: this.protectedDuringAlert ? "PROTECCIÓN APLICADA" : this.solarRiskAccepted ? "RIESGO ACEPTADO · EXPOSICIÓN" : "REFUGIO O EXPOSICIÓN" };
+      if (o.id === "soil-plan") return { ...o, done: !!this.soilPlan && this.verifiedTrial, title: "Prueba y verifica el cultivo", stationId: this.soilPlan ? "greenhouse" : "research", room: this.soilPlan ? "INVERNADERO" : "LABORATORIO", instruction: !e.results.includes("soil") ? "El sustrato es el material donde crecen las raíces. Estúdialo en el Laboratorio para decidir cómo preparar el cultivo." : !this.soilPlan ? "Elige entre aislar el circuito de agua o acondicionar el sustrato. Compara el coste y el crecimiento esperado." : "Ve al Invernadero y comprueba qué ocurrió con la planta después de aplicar tu elección." };
       return o;
     });
     let blocked = false;
@@ -216,7 +270,7 @@ export class Campaign {
       const processing = objective.id === `analyze-${e.processing}` || objective.id === "plant-trial" && sim.crop >= 0;
       // Water and soil are grouped missions: collecting/analyzing unlocks their
       // decision controls, but must never hide the guide to that first step.
-      const prerequisite = objective.id === "plant-trial" && !this.plantPlan || objective.id === "verify-trial" && !this.soilPlan || objective.id === "night-protection" && !this.solarStarted;
+      const prerequisite = objective.id === "night-protection" && !this.solarStarted;
       const waiting = blocked || processing || prerequisite;
       if (!objective.done && !processing && !prerequisite) blocked = true;
       return { ...objective, waiting };

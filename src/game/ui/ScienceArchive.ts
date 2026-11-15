@@ -3,6 +3,7 @@ import {
   sourceLink,
   type ScienceData,
 } from "../data/Science";
+import { marsRadReference } from "../data/Radiation";
 
 export function renderScienceArchive(
   data?: ScienceData,
@@ -36,6 +37,6 @@ export function renderScienceArchive(
     <div class="eyebrow">BITÁCORA DE CONOCIMIENTO / FUENTES OFICIALES</div>
     <h2>Archivo científico</h2><p>Registros históricos y referencias utilizadas en la simulación. Consulta: ${esc(data?.checkedAt || "archivo no disponible")}.</p>
     <div class="science-note">${selected ? `Registro de contexto de esta partida: <b>${esc(selected.id)}</b>.<br>` : ""}<b>SIMULACIÓN:</b> recursos 0–100, crecimiento acelerado y exposición sin unidad física. No son mediciones de NASA ni recomendaciones para una misión real.</div>
-    <div class="science-grid">${solar}${cards}<article class="radiation-article"><span class="eyebrow">RADLAB · ${data?.radiation.status === "verified" ? "MEDICIONES VERIFICADAS" : "INTEGRACIÓN PENDIENTE"}</span><h3>La radiación tiene unidades</h3><p>${esc(data?.radiation.explanation || "El archivo no está disponible. No mostramos valores inventados.")}</p>${table}${sourceLink("https://visualization.osdr.nasa.gov/radlab/gui/data-api/", "NASA RadLab · documentación")}</article></div>
+    <div class="science-grid">${solar}${cards}<article class="radiation-article"><span class="eyebrow">MARTE · CURIOSITY / RAD · DATO HISTÓRICO</span><h3>Calcular dosis absorbida</h3><p>Durante los primeros diez meses de Curiosity en Marte, RAD midió una tasa de referencia de alrededor de <b>${marsRadReference.rateMicrograyPerSol} μGy por sol</b>. Para un ejercicio sencillo: dosis absorbida = tasa × duración. Un sol de exposición a esa tasa da ${marsRadReference.rateMicrograyPerSol} μGy.</p><p>Es un promedio de un periodo y lugar concretos, no una medición en tiempo real ni un pronóstico para Base Aurora. La atmósfera y la actividad solar hacen variar las observaciones. μGy es dosis absorbida; no se convierte automáticamente a mSv.</p>${sourceLink(marsRadReference.url, marsRadReference.source)}</article><article class="radiation-article"><span class="eyebrow">RADLAB · ${data?.radiation.status === "verified" ? "MEDICIONES VERIFICADAS" : "INTEGRACIÓN PENDIENTE"}</span><h3>La radiación tiene unidades</h3><p>${esc(data?.radiation.explanation || "El archivo no está disponible. No mostramos valores inventados.")}</p>${table}${sourceLink("https://visualization.osdr.nasa.gov/radlab/gui/data-api/", "NASA RadLab · documentación")}</article></div>
     <p class="fine">Arte vectorial y sonidos originales generados por código. Proyecto independiente; NASA y CSA no avalan ni certifican este videojuego.</p>`;
 }

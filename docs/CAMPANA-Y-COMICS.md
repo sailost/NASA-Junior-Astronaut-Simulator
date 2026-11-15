@@ -1,5 +1,7 @@
 # Campaña de autonomía y cómics de SOL-3
 
+> **Nota de estado (15 de noviembre de 2026):** este documento registra la versión anterior con páginas narrativas. En la aplicación actual, las escenas de producción se reproducen desde `public/assets/cinematics/` mediante `CampaignCinematic.ts`; este historial ya no define el flujo audiovisual activo.
+
 ## Flujo implementado
 
 Menú → prólogo original → nivel 1 (día) → escena de noche → nivel 2 (noche) → escena de amanecer → nivel 3 (amanecer) → desenlace de victoria / éxito parcial / derrota → informe de resultados.

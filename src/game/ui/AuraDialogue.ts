@@ -5,6 +5,7 @@ import { auraMessage } from "./Aura";
 import { resourceHelp } from "./ResourceHelp";
 import { resourceNames } from "./ExpeditionHud";
 import type { ScienceData } from "../data/Science";
+import { marsRadReference } from "../data/Radiation";
 import type { AuraMood } from "./AuraHologram";
 export interface AuraContext { sim: Simulation; player?: { x: number; y: number }; objectiveId?: string; science?: ScienceData; }
 export interface AuraChoice { id: string; label: string; next?: string; action?: "guide" | "map"; }
@@ -61,8 +62,10 @@ export function auraDialogue(topic: string, context: AuraContext): AuraDialogueN
     node.references = [{ label: record ? "NASA CCMC / DONKI · registro histórico" : "NASA Open APIs · DONKI", url: record?.url || "https://api.nasa.gov/" }]; return node;
   }
   if (topic === "science-radiation") {
-    const node = base("Mediciones y simulación", science ? science.radiation.explanation : "RadLab contiene mediciones científicas con instrumento y ubicación. La escala 0–100 del juego no es una dosis real ni una medición de Marte.", [choice("resource:radiation", "¿Cómo protejo a la tripulación?"), choice("science", "Consultar otra fuente"), back], "thinking");
-    if (science) node.references = [{ label: "NASA OSDR RadLab · fuente y contexto", url: science.radiation.url }]; return node;
+    const node = base("Mediciones y cálculo de dosis", `Curiosity llevó el instrumento RAD a la superficie de Marte. NASA informa una tasa histórica cercana a ${marsRadReference.rateMicrograyPerSol} μGy por sol durante sus primeras mediciones. Para estimar dosis absorbida en un ejercicio: tasa × duración. Es una referencia de Gale Crater en 2012–2013, no una lectura actual de nuestra base. RadLab, en cambio, contiene datos de la ISS. La escala 0–100 de Base Aurora es ficticia y no se convierte a esas unidades.`, [choice("resource:radiation", "¿Cómo protejo a la tripulación?"), choice("science", "Consultar otra fuente"), back], "thinking");
+    node.references = [{ label: "NASA Science · mediciones RAD en Marte", url: marsRadReference.url }];
+    if (science) node.references.push({ label: "NASA OSDR RadLab · datos de la ISS", url: science.radiation.url });
+    return node;
   }
   if (topic.startsWith("science-")) {
     const search: Record<string, string> = { "science-plants": "OSD-37", "science-food": "food-production", "science-comms": "mars-relay", "science-map": "trek.nasa" };

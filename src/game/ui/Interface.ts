@@ -1,4 +1,4 @@
-import { renderExpeditionHud, resourceNames } from "./ExpeditionHud";
+import { hudIcon, renderExpeditionHud, resourceNames } from "./ExpeditionHud";
 import { renderMachineTerminal, stationPuzzle } from "./MachineTerminal";
 import { sampleNames } from "../systems/Expedition";
 import { objectiveDirection } from "./direction";
@@ -11,8 +11,8 @@ import { getObjectives, recommendObjective } from "../systems/objectives";
 import { renderMissionTracker } from "./MissionTracker";
 import { renderScienceArchive } from "./ScienceArchive";
 import { CinematicMenu } from "./CinematicMenu";
-import { Prologue } from "./Prologue";
-import { campaignStory } from "./CampaignStory";
+import { CampaignCinematic, campaignVideos } from "./CampaignCinematic";
+import { absorbedDoseMicrogray, marsRadReference } from "../data/Radiation";
 import { MissionLearning } from "./MissionLearning";
 import { MissionLessonView } from "./MissionLessonView";
 import type { CampaignOutcome } from "../systems/Campaign";
@@ -69,6 +69,37 @@ export class Interface {
     this.hudNode(selector).setAttribute(name, value);
     this.hudValues.set(key, value);
   }
+  private animateResourceChanges(before: Partial<Record<Resource, number>>, source?: HTMLElement) {
+    const sourceRect = source?.getBoundingClientRect();
+    const rootRect = this.root.getBoundingClientRect();
+    for (const key of Object.keys(labels) as Resource[]) {
+      const delta = this.sim.resources[key] - (before[key] ?? this.sim.resources[key]);
+      if (!Number.isFinite(delta) || Math.abs(delta) < 0.05) continue;
+      const target = this.root.querySelector<HTMLElement>(`[data-resource="${key}"]`);
+      if (!target || target.hidden) continue;
+      const targetRect = target.getBoundingClientRect();
+      const startX = sourceRect ? sourceRect.left + sourceRect.width / 2 : rootRect.left + rootRect.width / 2;
+      const startY = sourceRect ? sourceRect.top + sourceRect.height / 2 : rootRect.top + rootRect.height * 0.66;
+      const endX = targetRect.left + targetRect.width / 2;
+      const endY = targetRect.top + targetRect.height / 2;
+      const badge = document.createElement("div");
+      badge.className = `resource-flight ${delta >= 0 ? "gain" : "loss"}`;
+      badge.setAttribute("aria-hidden", "true");
+      badge.innerHTML = `${hudIcon(key)}<b>${delta >= 0 ? "+" : "−"}${Math.abs(delta).toFixed(1).replace(/\.0$/, "")}</b>`;
+      badge.style.left = `${startX - rootRect.left}px`;
+      badge.style.top = `${startY - rootRect.top}px`;
+      badge.style.setProperty("--flight-x", `${endX - startX}px`);
+      badge.style.setProperty("--flight-y", `${endY - startY}px`);
+      this.root.append(badge);
+      const cleanup = () => {
+        badge.remove(); target.classList.remove("resource-arrived");
+        void target.offsetWidth; target.classList.add("resource-arrived");
+        window.setTimeout(() => target.classList.remove("resource-arrived"), 650);
+      };
+      badge.addEventListener("animationend", cleanup, { once: true });
+      window.setTimeout(() => { if (badge.isConnected) cleanup(); }, 950);
+    }
+  }
   private science?: ScienceData;
   private screen = "menu";
   private returnScreen = "game";
@@ -77,7 +108,8 @@ export class Interface {
   private lastEmergencyId?: string;
   private missionMarkup = "";
   private menuView?: CinematicMenu;
-  private prologue?: Prologue;
+  private cinematic?: CampaignCinematic;
+  private solarAlertCinematicShown = false;
   private missionStarted = false;
   private endingNarrated = false;
   private learning = new MissionLearning();
@@ -187,6 +219,22 @@ export class Interface {
       this.help();
     this.root.querySelector<HTMLButtonElement>("#pause-btn")!.onclick = () =>
       this.pause();
+    const touchControls = this.root.querySelector<HTMLElement>("#touch-controls")!;
+    touchControls.addEventListener("pointerdown", (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-touch-direction]");
+      if (!button) return;
+      event.preventDefault();
+      button.setPointerCapture?.(event.pointerId);
+      this.scene.setTouchDirection(button.dataset.touchDirection!, true, event.pointerId);
+    });
+    const releaseTouchDirection = (event: PointerEvent) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-touch-direction]");
+      if (button) this.scene.setTouchDirection(button.dataset.touchDirection!, false, event.pointerId);
+    };
+    touchControls.addEventListener("pointerup", releaseTouchDirection);
+    touchControls.addEventListener("pointercancel", releaseTouchDirection);
+    touchControls.addEventListener("lostpointercapture", releaseTouchDirection);
+    this.root.querySelector<HTMLButtonElement>("#touch-interact")!.onclick = () => this.scene.requestTouchInteract();
     this.root.querySelector<HTMLButtonElement>("#science-btn")!.onclick = () =>
       this.archive();
     this.root.querySelector<HTMLButtonElement>("#sound-btn")!.onclick = () => {
@@ -314,7 +362,7 @@ export class Interface {
   }
   private show(screen: string, content: string, pause = false, wide = false) {
     this.lessonView?.destroy(); this.lessonView = undefined;
-    this.prologue?.destroy(); this.prologue = undefined;
+    this.cinematic?.destroy(); this.cinematic = undefined;
     this.layer.classList.remove("prologue-layer");
     this.resources.close(); this.companion?.update(false);
     if (this.tutorial.active) this.tutorialDrawerStep = "";
@@ -361,7 +409,7 @@ export class Interface {
   private close() {
     if (this.screen === "lesson" && this.lessonView && !this.lessonView.canContinue) return;
     this.lessonView?.destroy(); this.lessonView = undefined;
-    this.prologue?.destroy(); this.prologue = undefined;
+    this.cinematic?.destroy(); this.cinematic = undefined;
     this.layer.classList.remove("prologue-layer");
     if (this.screen === "result" && this.modal.querySelector(".result-beacon.success")) this.companion.celebrate();
     this.puzzle?.destroy();
@@ -429,9 +477,11 @@ export class Interface {
   private openPrologue() {
     this.show("prologue", "", true);
     this.layer.classList.add("prologue-layer"); this.modal.className = "prologue-modal";
-    this.modal.setAttribute("aria-label", "Prólogo ilustrado de Base Aurora");
-    this.prologue = new Prologue(this.modal, {
-      start: (read) => {
+    this.modal.setAttribute("aria-label", "Cinemática de introducción de Base Aurora");
+    this.cinematic = new CampaignCinematic(this.modal, {
+      source: campaignVideos.intro, title: "SOL-3 · Base Aurora",
+      onComplete: (read) => {
+        this.cinematic?.destroy(); this.cinematic = undefined;
         this.tutorial.setPrologueRead(read);
         if (this.missionStarted) this.restart(); else {
           if (this.options.campaign !== false) this.sim.startCampaign();
@@ -441,23 +491,41 @@ export class Interface {
         this.scene.cameras.main.fadeIn(650);
         if (this.tutorial.shouldStart && !this.tutorial.active) this.startTutorial();
       },
-      menu: () => this.menu(), turnSound: () => this.audio.pageFlip?.(), startSound: () => this.audio.tone("success"),
     });
   }
-  private openCampaignComic(id: "sol2" | "sol3" | CampaignOutcome, done: () => void) {
+  private openCampaignCinematic(id: "sol2" | "sol3" | CampaignOutcome, done: () => void) {
     this.puzzle?.destroy(); this.puzzle = undefined;
     this.show("story", "", true); this.layer.classList.add("prologue-layer"); this.modal.className = "prologue-modal";
-    this.modal.setAttribute("aria-label", "Historia de la operación de Base Aurora");
+    this.modal.setAttribute("aria-label", "Cinemática de la operación de Base Aurora");
     let completed = false;
-    this.prologue = new Prologue(this.modal, {
-      start: () => { if (completed) return; completed = true; done(); }, menu: () => {},
-      turnSound: () => this.audio.pageFlip?.(), startSound: () => this.audio.tone("success"),
-    }, campaignStory(id, this.sim));
+    const titles: Record<typeof id, string> = {
+      sol2: "SOL 1 · La noche se acerca",
+      sol3: "SOL 3 · Comienza el amanecer",
+      victory: "Informe final · Éxito",
+      partial: "Informe final · Éxito parcial",
+      defeat: "Informe final · Misión interrumpida",
+    };
+    this.cinematic = new CampaignCinematic(this.modal, {
+      source: campaignVideos[id], title: titles[id],
+      onComplete: () => { if (completed) return; completed = true; this.cinematic?.destroy(); this.cinematic = undefined; done(); },
+    });
+  }
+  private openSolarAlertCinematic() {
+    this.show("story", "", true); this.layer.classList.add("prologue-layer"); this.modal.className = "prologue-modal";
+    this.modal.setAttribute("aria-label", "Cinemática del protocolo solar preventivo");
+    this.cinematic = new CampaignCinematic(this.modal, {
+      source: campaignVideos.solarAlert,
+      title: "Aviso solar · Ejercicio simulado",
+      onComplete: () => {
+        this.cinematic?.destroy(); this.cinematic = undefined;
+        this.close(); this.lastRender = -1000; this.update();
+      },
+    });
   }
   private help() {
     this.show(
       "help",
-      `<button class="close" aria-label="Cerrar">×</button><div class="eyebrow">MANUAL DE MISIÓN / 01</div><h2>Procedimientos de operación</h2><p>Mantén a los cuatro tripulantes a salvo durante <b>tres etapas: d?a, noche y amanecer</b>. La primera práctica de cada consola detiene el reloj para aprender; los siguientes intentos mantienen la colonia en marcha.</p><p class="help-shortcuts"><kbd>J</kbd> Misiones &middot; <kbd>M</kbd> Mapa &middot; <kbd>R</kbd> Reservas &middot; <kbd>H</kbd> Controles &middot; <kbd>C</kbd> Conversar con AURA</p><ol class="instructions"><li><b>Explora con WASD o las flechas.</b> Acércate a una máquina y pulsa E. El plano muestra dónde estás.</li><li><b>Investiga en el laboratorio.</b> Recoge planta en el Invernadero y agua en Soporte vital; el suelo ya está en el Laboratorio. Coloca cada muestra y calibra el escáner. Los resultados se guardan solos.</li><li><b>Prepara la noche.</b> Planta, cosecha y optimiza paneles. Sin Sol, las baterías se vacían.</li><li><b>Responde a las alertas.</b> Repara las máquinas en su habitación. Ante el aviso solar, activa el refugio.</li><li><b>Envía tu informe.</b> Alinea la antena en control y espera la confirmación de la Tierra antes del final.</li></ol><p class="science-note">La pausa y el archivo detienen el reloj. Los números del juego son simulados. El archivo identifica los datos reales y sus fuentes.</p><button id="repeat-tutorial" class="full secondary" ${this.returnScreen === "menu" ? "disabled" : ""}>Repetir tutorial${this.returnScreen === "menu" ? " · inicia una misión primero" : ""}</button><button class="primary" id="ready">Entendido </button>`,
+      `<button class="close" aria-label="Cerrar">×</button><div class="eyebrow">MANUAL DE MISIÓN / 01</div><h2>Procedimientos de operación</h2><p>Mantén a los cuatro tripulantes a salvo durante <b>tres etapas: día, noche y amanecer</b>. La primera práctica de cada consola detiene el reloj para aprender; los siguientes intentos mantienen la colonia en marcha.</p><p class="help-shortcuts"><kbd>J</kbd> Misiones &middot; <kbd>M</kbd> Mapa &middot; <kbd>R</kbd> Reservas &middot; <kbd>H</kbd> Controles &middot; <kbd>C</kbd> Conversar con AURA</p><ol class="instructions"><li><b>Explora con WASD o las flechas; en móvil, usa el pad de dirección.</b> Acércate a una máquina y pulsa E o toca USAR. El plano muestra dónde estás.</li><li><b>Investiga en el laboratorio.</b> Recoge planta en el Invernadero y agua en Soporte vital; el suelo ya está en el Laboratorio. Coloca cada muestra y calibra el escáner. Los resultados se guardan solos.</li><li><b>Prepara la noche.</b> Planta, cosecha y optimiza paneles. Sin Sol, las baterías se vacían.</li><li><b>Responde a las alertas.</b> Repara las máquinas en su habitación. Ante el aviso solar, activa el refugio.</li><li><b>Envía tu informe.</b> Alinea la antena en control y espera la confirmación de la Tierra antes del final.</li></ol><p class="science-note">La pausa y el archivo detienen el reloj. Los números del juego son simulados. El archivo identifica los datos reales y sus fuentes.</p><button id="repeat-tutorial" class="full secondary" ${this.returnScreen === "menu" ? "disabled" : ""}>Repetir tutorial${this.returnScreen === "menu" ? " · inicia una misión primero" : ""}</button><button class="primary" id="ready">Entendido </button>`,
       true,
     );
     this.closeButton();
@@ -491,11 +559,16 @@ export class Interface {
     this.closeButton();
     this.modal.querySelectorAll<HTMLElement>("[data-command]").forEach((b) => b.onclick = () => {
       const before = this.sim.log.length;
+      const resourcesBefore = { ...this.sim.resources };
       const action = b.dataset.command!;
       const result = action === "collect-plant" || action === "collect-water"
         ? this.sim.collectSample(action === "collect-plant" ? "plant" : "water") : this.sim.action(action);
       const completed = this.sim.log.length > before;
-      this.audio.tone(completed ? "success" : "alert");
+      if (completed) this.animateResourceChanges(resourcesBefore, b);
+      if (!completed) this.audio.tone("alert");
+      else if (action === "collect-plant" || action === "collect-water") this.audio.play("recoleccion");
+      else if (action.startsWith("repair:")) this.audio.play("reparacion");
+      else this.audio.tone("success");
       if (completed) { this.scene.celebrateStation?.(s.id); this.companion.celebrate(); }
       this.tutorial.decision(action, completed);
       if (completed && this.options.lessons !== false) {
@@ -505,6 +578,18 @@ export class Interface {
       this.screen = "game"; this.terminal(s);
       this.modal.querySelector("#terminal-message")!.textContent = result;
     });
+    const radiationDuration = this.modal.querySelector<HTMLInputElement>("#radiation-duration");
+    if (radiationDuration) {
+      const refreshDose = () => {
+        const sols = Number(radiationDuration.value);
+        const dose = absorbedDoseMicrogray(marsRadReference.rateMicrograyPerSol, sols);
+        this.modal.querySelector("#radiation-duration-label")!.textContent = `${sols} ${sols === 1 ? "sol" : "soles"}`;
+        this.modal.querySelector("#radiation-dose")!.textContent = `${dose.toFixed(0)} μGy absorbidos`;
+        this.modal.querySelector("#radiation-equation")!.textContent = `${marsRadReference.rateMicrograyPerSol} μGy/sol × ${sols} ${sols === 1 ? "sol" : "soles"} = ${dose.toFixed(0)} μGy`;
+      };
+      radiationDuration.addEventListener("input", refreshDose);
+      radiationDuration.addEventListener("change", refreshDose);
+    }
     this.modal.querySelectorAll<HTMLButtonElement>("[data-allocation]").forEach((b) => {
       const reason = this.sim.campaign?.actionLock("allocation", this.sim);
       b.disabled = !!reason; b.title = reason || "";
@@ -548,6 +633,7 @@ export class Interface {
     this.puzzle = new Minigame(this.modal.querySelector("#minigame")!, kind, () => this.sim.time, (won) => {
       // The minigame callback is single-use; commit only against the current simulation.
       const before = this.sim.log.length;
+      const resourcesBefore = { ...this.sim.resources };
       let message = "No se completó la secuencia. Corrige los controles y vuelve a intentarlo.";
       if (won) {
         this.learned.add(kind);
@@ -558,13 +644,18 @@ export class Interface {
         this.sim.note("Intento de mantenimiento agotado: −1 energía. Puedes corregir y reintentar.");
       }
       const success = won && this.sim.log.length > before;
+      if (success || !won && !tutorial) this.animateResourceChanges(resourcesBefore);
       this.tutorial.decision(kind, success);
       this.puzzle?.destroy(); this.puzzle = undefined;
       if (success && this.options.lessons !== false) {
         this.learning.action(repair ? `repair:${s.system}` : kind === "laboratory" ? "research" : kind === "signal" ? "transmit" : kind === "shelter" ? "shelter" : "tend", this.sim);
         if (this.openNextLesson()) return;
       }
-      this.audio.tone(success ? "success" : "alert");
+      if (!success) this.audio.tone("failure");
+      else if (repair) this.audio.play("reparacion");
+      else if (kind === "shelter") this.audio.play("puerta");
+      else if (kind === "signal") this.audio.play("transmision");
+      else this.audio.tone("success");
       if (success) { this.scene.celebrateStation?.(s.id); this.companion.celebrate(); }
       if (success && this.sim.campaign) { this.screen = "game"; this.terminal(s); this.modal.querySelector("#terminal-message")!.textContent = message; return; }
       if (success && kind === "laboratory") { this.close(); return; }
@@ -598,6 +689,7 @@ export class Interface {
     this.sim = new Simulation();
     if (this.options.campaign !== false) this.sim.startCampaign();
     this.endingNarrated = false;
+    this.solarAlertCinematicShown = false;
     this.companion.reset();
     this.learned.clear();
     this.tutorial.cancel(); this.scene.tutorialMovement = false;
@@ -621,7 +713,7 @@ export class Interface {
     if (this.sim.campaign && !this.endingNarrated) {
       this.endingNarrated = true;
       this.sim.campaign.checkpoint(this.sim);
-      this.openCampaignComic(this.sim.campaign.outcome(this.sim), () => this.end());
+      this.openCampaignCinematic(this.sim.campaign.outcome(this.sim), () => this.end());
       return;
     }
     const s = this.sim,
@@ -660,7 +752,7 @@ export class Interface {
               research: s.research,
               report: s.report,
               decisions: s.log,
-              campaign: s.campaign ? { level: s.campaign.level, evidence: s.campaign.evidence, decisions: s.campaign.decisions, checkpoints: s.campaign.checkpoints } : undefined,
+              campaign: s.campaign ? { level: s.campaign.level, scenario: s.campaign.scenario, evidence: s.campaign.evidence, decisions: s.campaign.decisions, checkpoints: s.campaign.checkpoints } : undefined,
               model:
                 "Simulación educativa; recursos y exposición sin unidades físicas",
             },
@@ -738,9 +830,14 @@ export class Interface {
       return;
     }
     if (this.sim.campaign?.pending && this.screen === "game" && !this.tutorial.active) {
-      this.openCampaignComic(this.sim.campaign.pending, () => {
+      this.openCampaignCinematic(this.sim.campaign.pending, () => {
         this.sim.campaign!.advance(this.sim); this.coach.reset(); this.trackedId = undefined; this.close(); this.lastRender = -1000; this.update();
       });
+      return;
+    }
+    if (this.sim.campaign?.level === 2 && this.sim.campaign.solarStarted && !this.solarAlertCinematicShown && this.screen === "game" && this.sim.activeEvents.some((event) => event.system === "solar")) {
+      this.solarAlertCinematicShown = true;
+      this.openSolarAlertCinematic();
       return;
     }
     const now = performance.now();
@@ -826,6 +923,8 @@ export class Interface {
       this.screen === "game" && this.scene.nearest
         ? `<kbd>E</kbd><span>${esc(({ research: "Analizar muestra", greenhouse: s.crop >= 100 ? "Cosechar alimentos" : "Gestionar cultivo", shelter: "Activar refugio", control: "Revisar la base", comms: "Comunicar con Tierra", power: "Revisar baterías", oxygen: "Calibrar oxígeno", water: "Reciclar agua", upgrade: "Optimizar paneles" } as Record<string, string>)[this.scene.nearest.id] || this.scene.nearest.name)}</span>`
         : "", true);
+    this.hudNode("#touch-interact").toggleAttribute("disabled",
+      this.screen !== "game" || this.scene.blocked || !this.scene.nearest);
     for (const key of Object.keys(labels) as Resource[]) {
       this.writeHud(`#detail-${key}`, `${Math.ceil(s.resources[key])} / 100`);
       this.hudAttribute(`[data-resource="${key}"]`, "aria-label",

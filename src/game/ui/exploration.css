@@ -358,6 +358,35 @@
   font-size: 11px;
   line-height: 1.6;
 }
+.resource-flight {
+  position: absolute;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid #9ed5cf66;
+  border-radius: 5px;
+  background: #102b35f2;
+  box-shadow: 0 4px 18px #020b18a8;
+  pointer-events: none;
+  animation: resource-flight 720ms cubic-bezier(.2,.72,.26,1) both;
+}
+.resource-flight svg { width: 19px; height: 19px; }
+.resource-flight b { font: 700 12px/1 monospace; white-space: nowrap; }
+.resource-flight.gain { color: #9fe5bf; }
+.resource-flight.loss { color: #f0ad91; }
+.suit-resource.resource-arrived { animation: resource-arrived 560ms ease-out; }
+@keyframes resource-flight {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.72); }
+  14% { opacity: 1; transform: translate(-50%,-50%) scale(1.08); }
+  74% { opacity: 1; }
+  100% { opacity: .12; transform: translate(calc(-50% + var(--flight-x)), calc(-50% + var(--flight-y))) scale(.48); }
+}
+@keyframes resource-arrived {
+  0%,100% { filter: brightness(1); }
+  35% { filter: brightness(1.75); box-shadow: 0 0 18px #a4e8d878; }
+}
 .exploration-hud #interaction {
   position: absolute;
   top: auto;
@@ -385,6 +414,65 @@
   font-size: 12px;
   color: #d0dedb;
 }
+.touch-controls {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 12px 14px;
+  pointer-events: none;
+}
+.touch-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 42px);
+  grid-template-rows: repeat(3, 42px);
+  gap: 3px;
+  pointer-events: auto;
+}
+.touch-dpad button,
+.touch-interact {
+  display: grid;
+  place-items: center;
+  color: #d7eeee;
+  background: #10242edb;
+  border: 1px solid #a3d8db70;
+  box-shadow: 0 3px 12px #06131e88, inset 0 0 12px #91e1e51c;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.touch-dpad button {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+.touch-dpad button:active,
+.touch-interact:active:not(:disabled) {
+  background: #315461e8;
+  border-color: #c2eddf;
+  transform: scale(.96);
+}
+.touch-interact {
+  width: 66px;
+  height: 66px;
+  margin: 0 2px 12px 0;
+  border-radius: 50%;
+  gap: 1px;
+  pointer-events: auto;
+}
+.touch-interact strong {
+  font: 700 21px/1 monospace;
+}
+.touch-interact small {
+  font: 8px/1 Arial, sans-serif;
+  letter-spacing: 1px;
+}
+.touch-interact:disabled {
+  opacity: .48;
+}
 .zone-title {
   position: absolute;
   left: 50%;
@@ -404,6 +492,9 @@
 #interface:not([data-screen="game"]) .aura-message,
 #interface:not([data-screen="game"]) #interaction,
 #interface:not([data-screen="game"]) .zone-title {
+  visibility: hidden;
+}
+#interface:not([data-screen="game"]) .touch-controls {
   visibility: hidden;
 }
 @media (min-width: 1600px) {
@@ -481,7 +572,7 @@
     max-width: 285px;
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (pointer: coarse) {
   .sol-watch {
     left: 12px;
     top: 12px;
@@ -524,17 +615,24 @@
     width: min(300px, calc(100vw - 24px));
   }
   .aura-message {
-    left: 13px;
-    bottom: 14px;
-    max-width: 265px;
+    left: 12px;
+    bottom: 156px;
+    max-width: min(250px, calc(100vw - 24px));
+    padding: 9px 11px;
   }
   .exploration-hud #interaction {
-    bottom: 14px;
     left: auto;
     right: 12px;
     transform: none;
-    max-width: 200px;
+    max-width: min(220px, calc(100vw - 120px));
+    bottom: 91px;
     font-size: 10px;
+  }
+  .touch-controls {
+    display: flex;
+  }
+  .exploration-hud:has(.exploration-panel:not([hidden])) .touch-controls {
+    visibility: hidden;
   }
   .zone-title {
     top: 65px;
@@ -544,6 +642,25 @@
     font-size: 9px;
     letter-spacing: 1px;
   }
+}
+@media (pointer: coarse) {
+  .sol-watch,
+  .exploration-actions { top: max(12px, env(safe-area-inset-top)); }
+  .sol-watch { left: max(12px, env(safe-area-inset-left)); }
+  .exploration-actions { right: max(12px, env(safe-area-inset-right)); }
+  .suit-readings { left: max(12px, env(safe-area-inset-left)); top: max(74px, calc(env(safe-area-inset-top) + 62px)); }
+  .current-mission { left: max(13px, env(safe-area-inset-left)); top: max(125px, calc(env(safe-area-inset-top) + 113px)); }
+  .touch-controls {
+    padding: 12px max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  }
+  .aura-message { left: max(12px, env(safe-area-inset-left)); }
+}
+@media (max-height: 460px) and (pointer: coarse) {
+  .touch-controls { padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+  .touch-dpad { grid-template-columns: repeat(3, 36px); grid-template-rows: repeat(3, 36px); }
+  .touch-dpad button { width: 36px; height: 36px; border-radius: 10px; }
+  .touch-interact { width: 58px; height: 58px; margin-bottom: 8px; }
+  .aura-message { bottom: 130px; max-width: min(220px, calc(100vw - 24px)); }
 }
 @media (prefers-reduced-motion: reduce) {
   .zone-title,

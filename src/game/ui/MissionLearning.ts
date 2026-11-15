@@ -29,18 +29,18 @@ export const missionLessonCopy: Record<string, Copy> = {
   "tended": ["Ajustaste las condiciones del cultivo. Su crecimiento cambia, pero seguirá necesitando recursos y tiempo.", "Controlar el suministro de agua y las condiciones de crecimiento es parte de investigar sistemas de cultivo para el espacio.", campaignSources.plants],
 };
 const briefMessages: Record<string,string> = {
-  "analyze-plant": "Terminaste la prueba y elegiste cómo regar. Usarás esa elección cuando plantes en el Invernadero.",
+  "analyze-plant": "Terminaste la prueba, elegiste cómo regar y plantaste con esa estrategia. Ahora el cambio afectará al consumo de agua y al ritmo de crecimiento.",
   "plant-plan": "Comparaste dos formas de cuidar la planta y elegiste una: ahorrar agua o intentar que crezca antes. Esa elección se aplicará al nuevo cultivo.",
   "plant-trial": "Plantaste con la forma de riego que elegiste. El cultivo ya está en marcha y necesitará agua, electricidad y tiempo.",
   "batteries": "La reserva está preparada. Cuando se oculte el Sol, las baterías mantendrán los equipos en marcha.",
   "diagnose-night": "Encontraste el circuito que explica la señal. Ahora sabemos dónde hace falta intervenir.",
-  "restore-night": "El circuito vuelve a funcionar. Su producción ayudará a recuperar las reservas que se estaban consumiendo.",
+  "restore-night": "Elegiste reparar el equipo por completo o usar un puente temporal. Uno gasta un repuesto y recupera toda la producción; el otro la deja limitada para ahorrar piezas.",
   "collect-water": "La muestra de agua está guardada. La estudiaremos para decidir cómo conservar agua sin agotar la electricidad.",
   "analyze-water": "El análisis permite comparar dos opciones: recuperar más agua con energía o reducir su consumo.",
   "water-plan": "La estrategia de agua está aplicada. Su efecto ya forma parte del consumo y la recuperación de la base.",
-  "night-protection": "Activaste el refugio y la tripulación está a cubierto. Ahora podemos atender los demás sistemas que sigan pendientes.",
+  "night-protection": "La decisión ante el aviso solar quedó registrada. Proteger a la tripulación cuesta energía; mantener los equipos afuera conserva energía, pero aumenta la exposición simulada y limita el informe final.",
   "analyze-soil": "La comparación del sustrato está lista. Elige una configuración que puedas sostener con tus reservas.",
-  "soil-plan": "La configuración está aplicada. Falta comprobar que el cultivo crezca después de la intervención.",
+  "soil-plan": "Aplicaste una configuración y comprobaste el crecimiento. Esa observación permite explicar si la decisión tuvo el efecto esperado en el modelo.",
   "verify-trial": "El cultivo respondió a la intervención. Ya tenemos una observación que respalda la decisión del informe.",
   "planted": "El cultivo está en marcha. Necesita agua, electricidad y tiempo; plantar no crea comida al instante.",
   "sheltered": "La tripulación está a cubierto. El protocolo reduce la exposición simulada durante el ejercicio.",
@@ -48,7 +48,7 @@ const briefMessages: Record<string,string> = {
   "harvested": "La cosecha ya está en la reserva de alimentos. Puedes iniciar otro cultivo cuando lo necesites.",
   "tended": "Las condiciones del cultivo están ajustadas. Observa su crecimiento y cuida el agua disponible.",
 };
-const completedTitles: Record<string,string> = { "collect-plant":"Hoja recogida", "analyze-plant":"Forma de riego elegida", "plant-trial":"Cultivo plantado", batteries:"Baterías preparadas", "restore-night":"Equipo reparado", "water-plan":"Plan para conservar agua aplicado", "night-protection":"Tripulación protegida", "soil-plan":"Material del cultivo preparado", "verify-trial":"Crecimiento comprobado", report:"Informe enviado" };
+const completedTitles: Record<string,string> = { "collect-plant":"Hoja recogida", "analyze-plant":"Experimento de cultivo completado", "plant-trial":"Cultivo plantado", batteries:"Baterías preparadas", "restore-night":"Equipo reparado o puenteado", "water-plan":"Plan para conservar agua aplicado", "night-protection":"Protocolo solar resuelto", "soil-plan":"Ensayo de cultivo comprobado", "verify-trial":"Crecimiento comprobado", report:"Informe enviado" };
 export function nextLessonStep(sim: Simulation) {
   const c=sim.campaign!;
   if (sim.status !== "playing") return "Revisa el resultado de la operación y las decisiones que lo hicieron posible.";
@@ -56,13 +56,13 @@ export function nextLessonStep(sim: Simulation) {
   const current=c.objectives(sim).find((o)=>!o.done&&!o.waiting);
   switch(current?.id) {
     case "collect-plant": return "Ve al Invernadero y recoge la muestra para empezar la investigación del cultivo.";
-    case "analyze-plant": return sim.expedition.results.includes("plant") ? "Elige una estrategia en el Laboratorio: ahorrar agua o acelerar el cultivo." : "Ve al Laboratorio. El escáner permite comparar riego y crecimiento antes de elegir cómo cultivar.";
+    case "analyze-plant": return !sim.expedition.collected.plant ? "Ve al Invernadero y recoge una hoja para iniciar la investigación." : !sim.expedition.results.includes("plant") ? "Lleva la hoja al Laboratorio para comparar riego y crecimiento." : !c.plantPlan ? "Elige en el Laboratorio entre ahorrar agua o acelerar el crecimiento." : "Planta en el Invernadero y observa la consecuencia de tu plan.";
     case "plant-trial": return "Vuelve al Invernadero y pulsa Plantar. Así pondrás en marcha el cultivo con el riego que elegiste.";
     case "batteries": return "Ve a Máquinas y prepara la reserva de energía para mantener la base durante la noche.";
-    case "restore-night": return `Ve a ${c.nightRisk === "power" ? "Máquinas" : "Soporte vital"}. Inspecciona y restaura el circuito para recuperar su producción.`;
+    case "restore-night": return `Ve a ${c.riskRoom}. Diagnostica el equipo y elige entre repararlo por completo o conectar un puente temporal con producción reducida.`;
     case "water-plan": return !sim.expedition.collected.water ? "Recoge agua del reciclador en Soporte vital para estudiar cómo conservarla." : !sim.expedition.results.includes("water") ? "Lleva el agua al Laboratorio para comparar recuperación y gasto eléctrico." : "Elige en el Laboratorio cómo conservar agua con las reservas disponibles.";
-    case "night-protection": return "Ve al Refugio y activa el protocolo para proteger a la tripulación.";
-    case "soil-plan": return sim.expedition.results.includes("soil") ? "Elige en el Laboratorio cómo adaptar el sustrato a tus reservas." : "Analiza el sustrato en el Laboratorio para elegir cómo adaptar el cultivo.";
+    case "night-protection": return "Ve al Refugio. Puedes gastar energía para proteger a la tripulación o mantener los equipos activos y aceptar exposición simulada, lo que afecta el desenlace.";
+    case "soil-plan": return !sim.expedition.results.includes("soil") ? "Analiza el material de cultivo en el Laboratorio." : !c.soilPlan ? "Compara costes y elige cómo preparar el circuito o el sustrato." : "Ve al Invernadero y comprueba el crecimiento después de tu decisión.";
     case "verify-trial": return "Ve al Invernadero y pulsa Comprobar crecimiento para registrar cómo respondió la planta al cambio.";
     case "report": return sim.report === "pending" ? "Cuida las reservas mientras llega la confirmación de Tierra." : "Ve al enlace con Tierra en Control y transmite las evidencias de tu investigación.";
     default: return "Consulta a AURA para revisar el estado de la colonia.";

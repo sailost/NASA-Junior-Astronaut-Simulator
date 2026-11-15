@@ -1,4 +1,6 @@
-# Arte pendiente: entrada a la noche
+# Recursos narrativos históricos: entrada a la noche
+
+La escena activa de producción reproduce `../../cinematics/sol1_night.mp4`. Las páginas narrativas provisionales descritas abajo quedaron sustituidas por el video.
 
 Pendientes: `sol2-01.png`, `sol2-02.png`, panorámicas 1672 × 941, sin cambios al prólogo.
 La primera página muestra la puesta de Sol; la segunda anticipa tensión, sin afirmar una avería aún no activada.

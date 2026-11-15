@@ -38,6 +38,8 @@ export class BaseScene extends Phaser.Scene {
   private shade!: Phaser.GameObjects.Rectangle;
   private astronaut?: Astronaut;
   private motion = idleMotion();
+  private touchDirections = new Map<number, string>();
+  private touchInteractPending = false;
   private lastStep = 0;
   private lastAlert = 0;
   private lastDay = true;
@@ -107,6 +109,13 @@ export class BaseScene extends Phaser.Scene {
     this.cameras.main.setZoom(view.zoom);
     this.cameras.main.setDeadzone?.(view.deadzone.width, view.deadzone.height);
   }
+  setTouchDirection(direction: string, pressed: boolean, pointerId: number) {
+    if (pressed && !this.blocked) this.touchDirections.set(pointerId, direction);
+    else if (this.touchDirections.get(pointerId) === direction) this.touchDirections.delete(pointerId);
+  }
+  requestTouchInteract() {
+    if (!this.blocked && this.nearest) this.touchInteractPending = true;
+  }
   setTrackedStation(id?: string) {
     this.guide?.setTarget(id);
   }
@@ -153,12 +162,13 @@ export class BaseScene extends Phaser.Scene {
     const dt = Math.min(delta / 1000, 0.1);
     this.sim.tick(dt);
     if (!this.blocked && (!this.sim.paused || this.tutorialMovement) && this.sim.status === "playing") {
+      const touch = new Set(this.touchDirections.values());
       let dx =
-          Number(this.keys.D.isDown || this.keys.RIGHT.isDown) -
-          Number(this.keys.A.isDown || this.keys.LEFT.isDown),
+          Number(this.keys.D.isDown || this.keys.RIGHT.isDown || touch.has("right")) -
+          Number(this.keys.A.isDown || this.keys.LEFT.isDown || touch.has("left")),
         dy =
-          Number(this.keys.S.isDown || this.keys.DOWN.isDown) -
-          Number(this.keys.W.isDown || this.keys.UP.isDown);
+          Number(this.keys.S.isDown || this.keys.DOWN.isDown || touch.has("down")) -
+          Number(this.keys.W.isDown || this.keys.UP.isDown || touch.has("up"));
       const moved = moveAstronaut(
         this.player,
         this.motion,
@@ -182,12 +192,16 @@ export class BaseScene extends Phaser.Scene {
             Math.hypot(a.x - this.player.x, a.y - this.player.y) -
             Math.hypot(b.x - this.player.x, b.y - this.player.y),
         )[0];
-      if (Phaser.Input.Keyboard.JustDown(this.keys.E) && this.nearest) {
+      const touchInteract = this.touchInteractPending;
+      this.touchInteractPending = false;
+      if ((Phaser.Input.Keyboard.JustDown(this.keys.E) || touchInteract) && this.nearest) {
         if (this.astronaut) interactAstronaut(this.astronaut);
         this.onInteract(this.nearest);
       }
     }
     if (this.blocked || (this.sim.paused && !this.tutorialMovement) || this.sim.status !== "playing") {
+      this.touchDirections.clear();
+      this.touchInteractPending = false;
       this.motion.vx = 0;
       this.motion.vy = 0;
       if (this.astronaut) animateAstronaut(this.astronaut, this.motion, 0, dt);
@@ -203,7 +217,7 @@ export class BaseScene extends Phaser.Scene {
     const night = this.sim.daylight
       ? Math.max(0, (this.sim.phase - 0.5) / 0.12) * 0.12
       : this.sim.campaign?.level === 2 ? 0.57 : 0.19;
-    if (this.lastDay !== this.sim.daylight) this.audio.tone("click");
+    if (this.lastDay !== this.sim.daylight) this.audio.play(this.sim.daylight ? "dia" : "noche");
     this.lastDay = this.sim.daylight;
     this.shade.setAlpha(Phaser.Math.Linear(this.shade.alpha, night, 1 - Math.exp(-dt * 3)));
     this.playerLight.setPosition(this.player.x, this.player.y);
@@ -226,7 +240,10 @@ export class BaseScene extends Phaser.Scene {
       l.label.setVisible(!!broken);
       l.ring.setVisible(this.nearest?.id === l.station.id && !this.blocked);
     }
-    if (this.sim.activeEvents.length > this.lastAlert) this.audio.tone("alert");
+    if (this.sim.activeEvents.length > this.lastAlert) {
+      this.audio.play("alarma");
+      if (this.sim.activeEvents.at(-1)?.system === "power") this.audio.play("chispa");
+    }
     this.lastAlert = this.sim.activeEvents.length;
     this.onFrame();
     this.guide?.update(

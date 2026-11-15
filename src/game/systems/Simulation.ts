@@ -13,15 +13,20 @@ export class Simulation {
     greenhouse: true,
     comms: true,
   };
+  systemEfficiency: Record<SystemId, number> = { power: 1, oxygen: 1, water: 1, greenhouse: 1, comms: 1 };
   time = 0;
   paused = false;
   status: "playing" | "won" | "partial" | "lost" = "playing";
   campaign?: Campaign;
   startCampaign() {
     if (this.campaign || this.time > 0 || this.status !== "playing") return;
-    this.campaign = new Campaign();
+    this.campaign = new Campaign(this.seed);
     this.campaign.syncMissionClock(this);
-    this.resources.food = 38;
+    this.resources.water = this.campaign.scenario.initialWater;
+    this.resources.energy = this.campaign.scenario.initialEnergy;
+    this.resources.oxygen = this.campaign.scenario.initialOxygen;
+    this.resources.food = this.campaign.scenario.id === "crew" ? 27 : 38;
+    this.note(`Escenario: ${this.campaign.scenario.title}. ${this.campaign.scenario.briefing}`);
     this.note("Operación de autonomía iniciada: decisiones, evidencias y tres etapas. El tiempo no completa los objetivos por sí solo.");
   }
   reason = "";
@@ -165,19 +170,19 @@ export class Simulation {
       b.basePower +
       b.systemPower * (this.allocation === "science" ? 5 : 4) +
       (this.crop >= 0 ? 0.035 : 0) -
-      (!this.daylight && this.expedition.reserveMode ? 0.05 : 0) + (this.campaign?.waterPlan === "recovery" ? .04 : 0);
+      (!this.daylight && this.expedition.reserveMode ? 0.05 : 0) + (this.campaign?.waterPlan === "recovery" ? .04 : 0) + (!this.daylight ? this.campaign?.scenario.nightLoad || 0 : 0);
     r.energy +=
       ((this.daylight && this.systems.power
-        ? b.solar * (this.upgrades ? 1.22 : 1)
+        ? b.solar * this.systemEfficiency.power * (this.upgrades ? 1.22 : 1) * (this.campaign?.scenario.solarFactor || 1)
         : 0) -
         load) *
       dt;
     r.oxygen +=
-      ((powered && this.systems.oxygen ? b.oxygenProduction * life : 0) -
+      ((powered && this.systems.oxygen ? b.oxygenProduction * life * this.systemEfficiency.oxygen : 0) -
         b.oxygenUse) *
       dt;
     r.water +=
-      ((powered && this.systems.water ? b.waterRecovery * life * (this.campaign?.waterPlan === "recovery" ? 1.2 : 1) : 0) -
+      ((powered && this.systems.water ? b.waterRecovery * life * this.systemEfficiency.water * (this.campaign?.waterPlan === "recovery" ? 1.2 : 1) : 0) -
         b.waterUse * (this.campaign?.waterPlan === "reserve" ? .8 : 1)) *
       dt;
     r.food -= b.foodUse * dt;
@@ -188,7 +193,7 @@ export class Simulation {
       this.systems.greenhouse &&
       r.water > 1
     ) {
-      this.crop += b.cropGrowth * plants * dt *
+      this.crop += b.cropGrowth * plants * this.systemEfficiency.greenhouse * dt *
         (!this.daylight && this.expedition.reserveMode ? 0.7 : 1) *
         (this.expedition.greenhouseTended ? 1.1 : 1);
       r.water -= b.cropWater * dt * (this.campaign?.plantPlan === "economy" ? .65 : this.campaign?.plantPlan === "growth" ? 1.25 : 1);
@@ -313,7 +318,10 @@ export class Simulation {
     if (this.spareParts < 1 || !this.spend(balance.costs.repair)) return false;
     this.spareParts--;
     this.systems[system] = true;
+    this.systemEfficiency[system] = 1;
     this.repairs++;
+    if (this.campaign?.level === 2 && system === this.campaign.nightRisk) this.campaign.nightRepairPlan = "full";
+    if (this.campaign?.level === 2 && system === this.campaign.nightRisk) this.campaign.nightRepairPlan = "full";
     for (const e of this.activeEvents)
       if (e.system === system) e.resolved = true;
     this.note(`Sistema restaurado: ${system}. −5 energía, −1 repuesto.`);
@@ -372,6 +380,7 @@ export class Simulation {
       if (!this.systems.power || !this.spend(2)) return "Restaura las baterías y reserva 2 energía.";
       this.expedition.batteriesReady = true;
       this.expedition.reserveMode = true;
+      if (this.campaign) this.campaign.powerPlan = "reserve";
       this.note("Reserva nocturna preparada: −2 energía ahora, menor consumo nocturno y crecimiento nocturno un 30 % más lento.");
       return "Reserva preparada. Ahorrarás energía de noche; las plantas crecerán más despacio.";
     }
@@ -408,6 +417,7 @@ export class Simulation {
       this.spareParts -= 2;
       this.upgrades = 1;
       this.expedition.batteriesReady = true;
+      if (this.campaign) this.campaign.powerPlan = "upgrade";
       this.note(
         "Paneles optimizados: +22 % producción simulada. −16 energía, −2 repuestos.",
       );
@@ -434,7 +444,7 @@ export class Simulation {
       if (!this.spend(balance.costs.transmissionEnergy))
         return "Necesitas 8 energía.";
       this.report = "pending";
-      const delay = this.campaign ? 8 : balance.communicationDelay;
+      const delay = (this.campaign ? 8 : balance.communicationDelay) / Math.max(.25, this.systemEfficiency.comms);
       this.reportDue = this.time + delay;
       this.note(`Informe enviado. La confirmación llegará en ${delay} s de juego.`);
       return "Transmisión en curso. La espera está acelerada en esta simulación.";

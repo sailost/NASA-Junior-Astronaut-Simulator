@@ -4,6 +4,8 @@ import type { Station } from "../world/map";
 import type { PuzzleKind } from "../minigames/Minigame";
 import { specimenArt, plantArt } from "../minigames/machineArt";
 import { escapeHtml as esc } from "../data/Science";
+import { marsRadReference, absorbedDoseMicrogray } from "../data/Radiation";
+import { sourceLink } from "../data/Science";
 import { renderCampaignTerminal } from "./CampaignTerminal";
 
 export function stationPuzzle(s: Station): PuzzleKind | undefined {
@@ -55,7 +57,9 @@ export function renderMachineTerminal(s: Station, sim: Simulation) {
     content += launch(broken ? "Restaurar la antena" : "Sintonizar y transmitir", broken ? "5 energía + 1 repuesto · después podrás transmitir" : "8 energía · informe con evidencias y limitaciones", !broken && sim.report !== "none" ? "El informe ya fue enviado" : !broken && sim.research < (sim.campaign?.partialReport ? 2 : 3) ? "Completa las evidencias o declara un cierre parcial en el amanecer" : sim.campaign && !sim.campaign.partialReport && !sim.campaign.verifiedTrial ? "Falta comprobar el ensayo aplicado en el cultivo" : "");
   } else if (s.kind === "shelter") {
     art = `<div class="terminal-shield">⬡<span>4 TRIPULANTES</span></div>`;
-    content = `<span class="terminal-state">${sim.shielded ? "✓ TRIPULACIÓN A CUBIERTO" : "REFUGIO FÍSICO DISPONIBLE"}</span><h3>Protocolo de protección</h3><p>Las paredes y los materiales reducen la exposición simulada. La energía acciona puertas y comunicaciones.</p>${launch("Preparar a la tripulación", "6 energía · traslado al refugio", sim.shielded ? "El protocolo ya está activo" : "")}`;
+    const referenceDose = absorbedDoseMicrogray(marsRadReference.rateMicrograyPerSol, 1);
+    content = `<span class="terminal-state">${sim.shielded ? "✓ TRIPULACIÓN A CUBIERTO" : "REFUGIO FÍSICO DISPONIBLE"}</span><h3>Protocolo de protección</h3><p>Las paredes y los materiales reducen la exposición simulada. La energía acciona puertas y comunicaciones.</p><section class="radiation-calculator" aria-label="Calculadora educativa de dosis absorbida"><h4>Calcula una dosis de referencia en Marte</h4><label for="radiation-duration">Tiempo de exposición: <output id="radiation-duration-label">1 sol</output></label><input id="radiation-duration" type="range" min="1" max="10" step="1" value="1"><output id="radiation-dose" aria-live="polite">${referenceDose} μGy absorbidos</output><p id="radiation-equation">${marsRadReference.rateMicrograyPerSol} μGy/sol × 1 sol = ${referenceDose} μGy</p><small>Ejemplo con el promedio histórico medido por Curiosity/RAD en la superficie de Marte. La duración elegida es una práctica matemática, no una previsión para Base Aurora. μGy mide dosis absorbida; el índice 0–100 del juego no tiene unidad física.</small>${sourceLink(marsRadReference.url, marsRadReference.source)}</section>${launch("Preparar a la tripulación", "6 energía · traslado al refugio", sim.shielded ? "El protocolo ya está activo" : "")}`;
+    if (sim.campaign?.level === 2 && sim.campaign.solarStarted && !sim.shielded && sim.activeEvents.some((event) => event.system === "solar")) content += command("campaign-accept-exposure", "Mantener los equipos activos", "Sin coste de energía · +18 exposición simulada (0–100), sin protección y con desenlace parcial");
   } else if (s.kind === "upgrade") {
     content = `<span class="terminal-state">CAPTACIÓN SOLAR</span><h3>Más energía durante el día</h3><p>La optimización aumenta la producción simulada un 22 %. De noche no hay generación solar.</p>${command("upgrade", "Optimizar paneles", "16 energía + 2 repuestos", !!sim.upgrades)}`;
   } else {

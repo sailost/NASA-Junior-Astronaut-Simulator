@@ -36,6 +36,17 @@ export function renderExpeditionHud() {
     <div class="suit-readings" aria-label="Recursos de supervivencia">${resources}<button id="resources-btn" aria-label="Estado completo de la base (R)" aria-expanded="false" aria-controls="status-drawer">${hudIcon("status")}</button></div>
     <nav class="exploration-actions" aria-label="Accesos de exploración"><button id="mission-btn" aria-label="Misiones (J)" title="Misiones · J" aria-expanded="false" aria-controls="mission-drawer">${hudIcon("mission")}</button><button id="map-btn" aria-label="Mapa de la base (M)" title="Mapa · M" aria-expanded="false" aria-controls="map-drawer">${hudIcon("map")}</button><button id="controls-btn" aria-label="Controles (H)" title="Controles · H">${hudIcon("help")}</button><button id="pause-btn" aria-label="Pausa (Esc)" title="Pausa · Esc">${hudIcon("pause")}</button></nav>
     <button id="current-mission-btn" class="current-mission" aria-label="Abrir todas las misiones" aria-expanded="false" aria-controls="mission-drawer"><span class="current-mission-label">MISIÓN ACTUAL <span>J</span></span><strong id="current-mission-title">Recoge una muestra vegetal</strong><span class="current-mission-meta"><span id="current-mission-destination">Destino: Invernadero</span><b id="current-mission-progress">0 / 3</b></span><span id="current-mission-next">Acércate al bancal y pulsa E.</span></button>
+    <div class="touch-controls" id="touch-controls" aria-label="Controles táctiles">
+      <div class="touch-dpad" role="group" aria-label="Mover astronauta">
+        <button type="button" data-touch-direction="up" aria-label="Mover hacia arriba">▲</button>
+        <button type="button" data-touch-direction="left" aria-label="Mover hacia la izquierda">◀</button>
+        <span aria-hidden="true"></span>
+        <button type="button" data-touch-direction="right" aria-label="Mover hacia la derecha">▶</button>
+        <span aria-hidden="true"></span>
+        <button type="button" data-touch-direction="down" aria-label="Mover hacia abajo">▼</button>
+      </div>
+      <button id="touch-interact" class="touch-interact" type="button" aria-label="Interactuar con la estación cercana" disabled><strong>E</strong><small>USAR</small></button>
+    </div>
     <div id="processing-readout" class="processing-readout" role="status" hidden></div>
     <div id="objective-direction" class="objective-direction" aria-hidden="true" hidden><span>➤</span><small>OBJETIVO</small></div>
     <aside id="mission-drawer" class="mission exploration-panel" hidden><div class="drawer-heading"><span>Misiones</span><button id="close-mission" aria-label="Cerrar misiones">×</button></div><div id="objectives"></div></aside>

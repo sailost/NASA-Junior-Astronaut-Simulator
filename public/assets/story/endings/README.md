@@ -1,4 +1,6 @@
-# Arte pendiente: desenlaces
+# Recursos narrativos históricos: desenlaces
+
+Los finales activos de producción reproducen `../../cinematics/ending_success.mp4`, `ending_partial.mp4` o `ending_failure.mp4`, según el resultado. Las páginas PNG descritas abajo ya no son necesarias para el flujo de la aplicación.
 
 Dos páginas por variante, 1672 × 941:
 
