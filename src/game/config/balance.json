@@ -1,0 +1,36 @@
+{
+  "solSeconds": 180,
+  "dayFraction": 0.62,
+  "moveSpeed": 155,
+  "researchGoal": 3,
+  "communicationDelay": 28,
+  "criticalGrace": 24,
+  "initial": {
+    "energy": 76,
+    "oxygen": 86,
+    "water": 78,
+    "food": 72,
+    "health": 100,
+    "radiation": 0
+  },
+  "rates": {
+    "solar": 0.58,
+    "basePower": 0.12,
+    "systemPower": 0.055,
+    "oxygenUse": 0.14,
+    "oxygenProduction": 0.18,
+    "waterUse": 0.085,
+    "waterRecovery": 0.105,
+    "foodUse": 0.065,
+    "cropWater": 0.08,
+    "cropGrowth": 0.9
+  },
+  "costs": {
+    "repair": 5,
+    "researchEnergy": 12,
+    "researchWater": 5,
+    "plantWater": 8,
+    "upgradeEnergy": 16,
+    "transmissionEnergy": 8
+  }
+}

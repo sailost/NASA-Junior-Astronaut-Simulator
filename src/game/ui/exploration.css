@@ -1,0 +1,553 @@
+/* Gameplay only. The cinematic menu has no selectors in this stylesheet. */
+.exploration-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #dfe8e6;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+.exploration-hud button {
+  pointer-events: auto;
+}
+.sol-watch {
+  position: absolute;
+  top: 20px;
+  left: 22px;
+  min-width: 108px;
+  padding: 10px 14px;
+  background: #101d26c9;
+  border: 1px solid #b2c6c322;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+}
+.sol-watch > strong {
+  font-size: 13px;
+  font-weight: 550;
+  letter-spacing: 1px;
+}
+.sol-watch > strong span {
+  font-size: 10px;
+  color: #78959c;
+}
+.sol-watch small {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: #a3b9bb;
+  letter-spacing: 0.6px;
+}
+.sol-watch #day-bar {
+  margin-top: 6px;
+  height: 1px;
+  background: #a5c6c51a;
+}
+.sol-watch #day-bar i {
+  background: #d5ac73;
+  height: 1px;
+}
+.suit-readings {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 10px 13px;
+  height: 46px;
+  background: #101d26c9;
+  border: 1px solid #b2c6c322;
+  border-radius: 7px;
+  backdrop-filter: blur(8px);
+}
+.suit-resource {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 44px;
+  color: #a6cdcf;
+}
+.suit-icon {
+  width: 18px;
+  height: 20px;
+}
+.suit-icon svg,
+.suit-readings button svg,
+.exploration-actions svg {
+  width: 21px;
+  height: 21px;
+  display: block;
+}
+.suit-resource strong {
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #e0ecea;
+}
+.suit-resource strong span {
+  display: none;
+}
+.suit-tick {
+  position: absolute;
+  height: 1px;
+  left: 24px;
+  right: 0;
+  bottom: -4px;
+  background: #9bbfbf26;
+}
+.suit-tick i {
+  display: block;
+  height: 1px;
+  background: #80b7ba;
+  transition: width 0.3s;
+}
+.suit-resource.low,
+.suit-resource.low strong {
+  color: #f1b391;
+}
+.suit-resource.low i {
+  background: #e3a77e;
+}
+.suit-readings button {
+  border-left: 1px solid #a5c3c72a;
+  padding: 0 0 0 10px;
+  color: #8faeb4;
+}
+.exploration-actions {
+  position: absolute;
+  right: 22px;
+  top: 20px;
+  display: flex;
+  gap: 7px;
+}
+.exploration-actions button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: #a8c2c6;
+  background: #101d26bf;
+  border: 1px solid #b2c6c322;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+}
+.exploration-actions button:hover,
+.exploration-actions button[aria-expanded="true"] {
+  background: #263d49dd;
+  color: #e4c18e;
+  border-color: #ad93624d;
+}
+.current-mission {
+  position: absolute;
+  top: 91px;
+  left: 23px;
+  width: 244px;
+  padding: 10px 13px 12px;
+  text-align: left;
+  background: linear-gradient(100deg, #15232cc7, #14232b55);
+  border-left: 2px solid #c3a170;
+  border-radius: 0 4px 4px 0;
+}
+.current-mission-label {
+  display: block;
+  color: #8ca7aa;
+  font-size: 8px;
+  letter-spacing: 1.6px;
+}
+.current-mission-label > span {
+  float: right;
+  font-size: 8px;
+  color: #657f86;
+}
+.current-mission > strong {
+  display: block;
+  margin-top: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #e7dfd0;
+}
+.current-mission-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 10px;
+  color: #8eafb5;
+}
+.current-mission-meta > b {
+  font-size: 10px;
+  color: #c8b085;
+  font-weight: 400;
+}
+.exploration-panel {
+  pointer-events: auto;
+  background: #15242eec;
+  backdrop-filter: blur(12px);
+  border: 1px solid #8dacb737;
+  border-radius: 6px;
+  box-shadow: 0 14px 36px #06131e50;
+}
+.exploration-hud .mission {
+  position: absolute;
+  left: 22px;
+  right: auto;
+  top: 196px;
+  width: 285px;
+  max-height: calc(100dvh - 225px);
+  padding: 0;
+  overflow: auto;
+}
+.exploration-panel .drawer-heading {
+  display: flex;
+  padding: 13px 15px;
+  align-items: center;
+  justify-content: space-between;
+  font-family: inherit;
+  background: none;
+  color: #c8dbdc;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid #88a9b62b;
+}
+.exploration-panel .drawer-heading:before {
+  display: none;
+}
+.exploration-panel .drawer-heading button {
+  padding: 0 3px;
+  font-size: 20px;
+  color: #88a8af;
+}
+.exploration-hud .quest {
+  border-radius: 0;
+}
+.exploration-hud .quest-copy strong {
+  font-family: inherit;
+}
+.exploration-hud .quest-instruction {
+  font-size: 11px;
+}
+.exploration-hud .quest-hint {
+  color: #a89473;
+}
+.status-panel {
+  position: absolute;
+  right: 22px;
+  top: 76px;
+  width: 310px;
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+}
+.panel-caption {
+  font-size: 10px;
+  color: #7f9da5;
+  padding: 0 15px;
+  line-height: 1.6;
+}
+.reserve-detail {
+  margin: 10px 15px;
+  font-size: 12px;
+}
+.reserve-detail > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #7f9ea220;
+}
+.reserve-detail dt {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #9cb9bf;
+}
+.reserve-detail svg {
+  width: 17px;
+  height: 17px;
+}
+.reserve-detail dd {
+  margin: 0;
+  color: #d8e5e1;
+  font-variant-numeric: tabular-nums;
+}
+#system-detail {
+  margin: 14px 15px;
+  font-size: 11px;
+  color: #8caab2;
+  line-height: 1.8;
+}
+.status-links {
+  display: flex;
+  padding: 13px 15px;
+  gap: 15px;
+  border-top: 1px solid #7f9ea220;
+}
+.status-links button {
+  font-size: 11px;
+  color: #b8cecf;
+}
+.exploration-hud .map {
+  position: absolute;
+  right: 22px;
+  left: auto;
+  top: 76px;
+  bottom: auto;
+  width: 310px;
+  padding: 0 0 12px;
+}
+.exploration-hud .map svg {
+  display: block;
+  width: 100%;
+  margin: 12px 0 4px;
+}
+.map-key {
+  display: flex;
+  justify-content: center;
+  gap: 17px;
+  font-size: 9px;
+  color: #a0babf;
+  margin: 8px 0 14px;
+}
+.exploration-hud .map > #room-name {
+  display: block;
+  font-size: 9px;
+  color: #c4b28f;
+  letter-spacing: 0.9px;
+  padding: 0 15px;
+}
+.aura-message {
+  position: absolute;
+  left: 23px;
+  bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 11px 14px;
+  max-width: 340px;
+  background: #13252dd6;
+  border: 1px solid #8eafb12b;
+  border-radius: 5px;
+  box-shadow: 0 8px 20px #06131a30;
+}
+.aura-mark {
+  flex: 0 0 27px;
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 29px;
+  border: 1px solid #739a9f70;
+  color: #adc8c7;
+  font-family: monospace;
+  font-size: 18px;
+  border-radius: 4px;
+}
+.aura-message strong {
+  display: block;
+  color: #7fa8ae;
+  font-size: 8px;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+.aura-message p {
+  margin: 0;
+  color: #bbcece;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.exploration-hud #interaction {
+  position: absolute;
+  top: auto;
+  bottom: 25px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 9px;
+  padding: 8px 12px;
+  background: #13242cdd;
+  border: 1px solid #a3bdbc3b;
+  border-radius: 5px;
+  font-size: 12px;
+}
+.exploration-hud #interaction kbd {
+  padding: 4px 6px;
+  font-size: 10px;
+  color: #14232c;
+  background: #c5b28f;
+  border: 0;
+  border-radius: 3px;
+}
+.exploration-hud #interaction span {
+  font-size: 12px;
+  color: #d0dedb;
+}
+.zone-title {
+  position: absolute;
+  left: 50%;
+  top: 89px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #d3e1df;
+  opacity: 0;
+  transition: opacity 0.65s;
+  text-shadow: 0 2px 6px #05131e;
+}
+.zone-title.visible {
+  opacity: 0.8;
+}
+#interface:not([data-screen="game"]) .current-mission,
+#interface:not([data-screen="game"]) .aura-message,
+#interface:not([data-screen="game"]) #interaction,
+#interface:not([data-screen="game"]) .zone-title {
+  visibility: hidden;
+}
+@media (min-width: 1600px) {
+  .sol-watch {
+    top: 26px;
+    left: 28px;
+  }
+  .suit-readings {
+    top: 26px;
+  }
+  .exploration-actions {
+    top: 26px;
+    right: 28px;
+  }
+  .current-mission {
+    left: 29px;
+    top: 100px;
+  }
+  .aura-message {
+    left: 29px;
+    bottom: 29px;
+  }
+  .exploration-hud .mission {
+    left: 28px;
+    top: 200px;
+  }
+  .status-panel,
+  .exploration-hud .map {
+    right: 28px;
+    top: 83px;
+  }
+}
+@media (max-width: 1100px) {
+  .suit-readings {
+    gap: 11px;
+    padding: 10px;
+    height: 43px;
+  }
+  .suit-resource {
+    min-width: 36px;
+    gap: 4px;
+  }
+  .suit-resource strong {
+    font-size: 12px;
+  }
+  .suit-icon {
+    width: 16px;
+  }
+  .suit-icon svg {
+    width: 18px;
+  }
+  .sol-watch {
+    min-width: 94px;
+    padding: 9px 11px;
+  }
+  .exploration-actions {
+    gap: 5px;
+  }
+  .exploration-actions button {
+    width: 33px;
+    height: 34px;
+  }
+  .exploration-actions svg {
+    width: 18px;
+  }
+  .current-mission {
+    width: 230px;
+    top: 84px;
+  }
+  .zone-title {
+    top: 78px;
+    font-size: 10px;
+  }
+  .aura-message {
+    max-width: 285px;
+  }
+}
+@media (max-width: 760px) {
+  .sol-watch {
+    left: 12px;
+    top: 12px;
+    padding: 7px 10px;
+    min-width: 90px;
+  }
+  .sol-watch > strong {
+    font-size: 11px;
+  }
+  .sol-watch small {
+    font-size: 9px;
+  }
+  .suit-readings {
+    top: 74px;
+    left: 12px;
+    transform: none;
+    gap: 11px;
+    height: 37px;
+    padding: 8px 10px;
+  }
+  .exploration-actions {
+    top: 12px;
+    right: 12px;
+  }
+  .current-mission {
+    left: 13px;
+    top: 125px;
+    width: 221px;
+  }
+  .exploration-hud .mission {
+    left: 12px;
+    top: 223px;
+    width: 270px;
+    max-height: calc(100dvh - 240px);
+  }
+  .status-panel,
+  .exploration-hud .map {
+    right: 12px;
+    top: 120px;
+    width: min(300px, calc(100vw - 24px));
+  }
+  .aura-message {
+    left: 13px;
+    bottom: 14px;
+    max-width: 265px;
+  }
+  .exploration-hud #interaction {
+    bottom: 14px;
+    left: auto;
+    right: 12px;
+    transform: none;
+    max-width: 200px;
+    font-size: 10px;
+  }
+  .zone-title {
+    top: 65px;
+    left: auto;
+    right: 12px;
+    transform: none;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zone-title,
+  .suit-tick i {
+    transition: none;
+  }
+}

@@ -1,0 +1,446 @@
+/* Mission HUD: persistent left rail, selected objective and matching world marker. */
+#interface {
+  --quest-accent: #f0bd6b;
+  --hud-cyan: #7bd7e3;
+}
+.mission {
+  left: 16px;
+  right: auto;
+  top: 80px;
+  width: 260px;
+  max-height: calc(100dvh - 142px);
+  padding: 0;
+  background: #101d2af2;
+  border: 1px solid #5b839b65;
+  box-shadow: 0 8px 24px #07111b55;
+  border-radius: 2px;
+}
+.drawer-heading {
+  padding: 13px 15px 12px;
+  font-family: Bahnschrift, "Arial Narrow", sans-serif;
+  letter-spacing: 2px;
+  font-weight: 600;
+  font-size: 12px;
+  color: #edf4f5;
+  background: linear-gradient(110deg, #27415399, #162637);
+  border-bottom: 1px solid #5c8ba64a;
+}
+.drawer-heading:before {
+  content: "";
+  width: 4px;
+  height: 13px;
+  background: var(--quest-accent);
+  margin-right: 9px;
+  box-shadow: 0 0 9px #edb85c35;
+}
+.drawer-heading > span {
+  flex: 1;
+}
+.drawer-heading button {
+  font-size: 18px;
+  color: #9ab5c6;
+}
+.quest-section {
+  display: flex;
+  justify-content: space-between;
+  margin: 14px 14px 7px;
+  font-family: Bahnschrift, sans-serif;
+  font-size: 9px;
+  letter-spacing: 1.2px;
+  color: #759db4;
+}
+.quest-section > span {
+  color: #b4cdd8;
+  font-variant-numeric: tabular-nums;
+}
+.quest {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  border-left: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.quest:hover {
+  background: #35546a30;
+}
+.quest-index {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  font:
+    11px Bahnschrift,
+    monospace;
+  color: #7399ad;
+  border: 1px solid #44647865;
+  background: #172b3b;
+}
+.quest-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+}
+.quest-copy strong {
+  font-family: Bahnschrift, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #d6e4ed;
+  font-weight: 500;
+}
+.quest-room {
+  display: block;
+  margin-top: 4px;
+  font-size: 9px;
+  color: #7ea7ba;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+}
+.quest-instruction {
+  margin-top: 9px;
+  font-size: 11px;
+  color: #b5c9d8;
+  line-height: 1.65;
+}
+.quest-hint {
+  font-size: 9px;
+  color: #bd9b65;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+.quest-progress {
+  display: block;
+  color: #90adbc;
+  font-size: 10px;
+  margin-top: 7px;
+  font-variant-numeric: tabular-nums;
+}
+.quest.tracked {
+  border-left-color: var(--quest-accent);
+  background: linear-gradient(100deg, #e7b15d13, #27435824);
+}
+.quest.tracked .quest-index {
+  color: #f1ca86;
+  border-color: #b991506a;
+  background: #e3b35e12;
+}
+.quest.tracked strong {
+  color: #f0e7d6;
+  font-size: 13px;
+}
+.quest.tracked .quest-room {
+  color: #f0bd6b;
+}
+.quest.tracked .quest-progress {
+  color: #d9c597;
+}
+.tracking-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--quest-accent);
+  transform: rotate(45deg);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+.quest-done {
+  opacity: 0.58;
+}
+.quest-done .quest-index {
+  color: #81c4a6;
+  border-color: #477b6865;
+}
+.quest-done strong {
+  text-decoration: line-through;
+  text-decoration-color: #54796c;
+}
+.quest-done .quest-progress {
+  color: #81c4a6;
+}
+.danger-label {
+  color: #e8ac89;
+}
+.quest-urgent.tracked {
+  border-left-color: #ef9c7d;
+  background: #bd77521a;
+}
+.support-quests {
+  margin: 10px 0 0;
+  border-top: 1px solid #5a7e942f;
+}
+.support-quests summary {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 14px;
+  font-size: 10px;
+  color: #96b2c5;
+}
+.support-quests summary:before {
+  content: "+";
+  margin-right: 8px;
+  color: #e1ba73;
+}
+.support-quests[open] summary:before {
+  content: "−";
+}
+.support-quests summary span {
+  color: #5f8196;
+  font-size: 8px;
+  margin-left: auto;
+  letter-spacing: 0.5px;
+}
+.quest-controls {
+  border-top: 1px solid #5a7e942f;
+  padding: 11px 14px;
+  font-size: 9px;
+  color: #7596a9;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.quest-controls kbd {
+  font-size: 8px;
+  padding: 2px 4px;
+  border-color: #688ba350;
+  color: #b8cbd5;
+  background: #1b3243;
+}
+.hud {
+  background: #111e2ef7;
+  border-bottom: 1px solid #5786a24a;
+  box-shadow: 0 2px 16px #050d1c35;
+}
+.brand-mark {
+  color: #bcebf0;
+  border-color: #7bd7e3;
+}
+.brand {
+  font-family: Bahnschrift, "Segoe UI", sans-serif;
+  letter-spacing: 1.5px;
+}
+.resource-symbol {
+  color: #78b3cc;
+}
+.meter i {
+  background: #6dc4d7;
+  box-shadow: 0 0 5px #69b5ce25;
+}
+.resource strong {
+  color: #e5f3f6;
+}
+.clock strong {
+  color: #f0bd6b;
+}
+.toolbar {
+  background: #111e2ef7;
+  border-top: 1px solid #5786a23a;
+}
+.toolbar button[aria-expanded="true"] {
+  color: #f0c37b;
+}
+.map {
+  background: #132333ed;
+  border-color: #5b839b65;
+}
+.map > span {
+  color: #bdd4df;
+}
+.primary {
+  background: #e0b36c;
+  color: #182534;
+  font-family: Bahnschrift, "Segoe UI", sans-serif;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid #8f6c3f;
+}
+.primary:hover {
+  background: #efc782;
+}
+#modal {
+  background: #182b3b;
+  border-color: #577d955e;
+  box-shadow: 0 24px 80px #050d1a99;
+}
+#modal h2 {
+  font-family: Bahnschrift, "Segoe UI", sans-serif;
+  font-weight: 500;
+}
+.main-menu {
+  background: #142637 !important;
+}
+.mission-plate {
+  background: #102131;
+}
+.menu-copy .eyebrow {
+  color: #80b5c9;
+}
+.menu-copy h1 {
+  color: #eff5f4;
+  text-shadow: 3px 0 #73c2d015;
+}
+.menu-copy h2 {
+  color: #e2bb77;
+}
+.menu-copy p {
+  color: #a8c0d0 !important;
+}
+.mission:not([hidden]) ~ .alert-strip {
+  display: flex;
+}
+.alert-strip {
+  border-left-color: #df9c70;
+  background: #342b26e8;
+  right: 18px;
+  max-width: min(420px, calc(100vw - 310px));
+}
+.notification {
+  left: 310px;
+  max-width: 330px;
+  background: #132536d9;
+}
+#interaction {
+  border-color: #bf9b5452;
+  background: #152738ed;
+}
+#interaction kbd {
+  background: #e7bb70;
+  color: #152331;
+  border-color: #e7bb70;
+  font-weight: 600;
+}
+@media (min-width: 1550px) {
+  .mission {
+    left: 16px;
+    right: auto;
+    top: 80px;
+    width: 260px;
+  }
+}
+@media (max-width: 1150px) {
+  .mission {
+    left: 12px;
+    right: auto;
+    top: 78px;
+    width: 224px;
+  }
+  .quest {
+    padding: 10px 11px;
+    gap: 8px;
+  }
+  .quest-copy strong {
+    font-size: 11px;
+  }
+  .quest.tracked strong {
+    font-size: 12px;
+  }
+  .quest-instruction {
+    font-size: 10px;
+  }
+  .quest-room {
+    font-size: 9px;
+  }
+  .quest-controls {
+    font-size: 8px;
+    padding-inline: 10px;
+    gap: 4px;
+  }
+  .notification {
+    left: 265px;
+    max-width: 270px;
+  }
+  .alert-strip {
+    max-width: min(360px, calc(100vw - 275px));
+  }
+}
+@media (max-width: 850px) {
+  .mission {
+    left: 10px;
+    right: auto;
+    top: 78px;
+    width: 226px;
+  }
+  .quest-instruction {
+    font-size: 10px;
+  }
+  .alert-strip {
+    font-size: 10px;
+    max-width: calc(100vw - 275px);
+  }
+  .quest-controls {
+    font-size: 8px;
+  }
+  .notification {
+    left: 265px;
+  }
+}
+@media (max-width: 759px) {
+  .mission {
+    left: 10px;
+    right: auto;
+    top: 76px;
+    width: 208px;
+    max-height: calc(100dvh - 145px);
+  }
+  .quest {
+    padding: 9px 10px;
+    gap: 7px;
+  }
+  .quest-index {
+    flex-basis: 18px;
+    width: 18px;
+    height: 20px;
+    font-size: 10px;
+  }
+  .quest-copy strong {
+    font-size: 10px;
+  }
+  .quest.tracked strong {
+    font-size: 11px;
+  }
+  .quest-room {
+    font-size: 8px;
+    letter-spacing: 0.2px;
+  }
+  .quest-instruction {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+  .quest-hint {
+    display: none;
+  }
+  .drawer-heading {
+    font-size: 11px;
+    padding: 10px 12px;
+  }
+  .quest-controls {
+    display: none;
+  }
+  .alert-strip {
+    right: 8px;
+    max-width: calc(100vw - 236px);
+  }
+  .alert-strip button {
+    display: none;
+  }
+  .notification {
+    left: 230px;
+    max-width: calc(100vw - 240px);
+  }
+  .support-quests summary {
+    font-size: 9px;
+    padding: 10px;
+  }
+  .support-quests summary span {
+    font-size: 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quest {
+    transition: none;
+  }
+}

@@ -1,0 +1,43 @@
+.suit-readings .suit-resource { border: 0; padding: 0; background: none; color: #a6cdcf; font: inherit; text-align: left; }
+.suit-readings .suit-resource:hover, .suit-readings .suit-resource[aria-expanded="true"] { color: #d2f5ee; }
+.suit-readings .suit-resource.low { color: #f1b391; }
+.suit-resource:focus-visible, [data-detail-resource]:focus-visible { outline: 2px solid #c8ede0; outline-offset: 6px; border-radius: 4px; }
+.suit-resource[hidden] { display: none; }
+[data-detail-resource] { cursor: help; }
+.aura-hologram { width: 48px; height: 57px; flex: 0 0 48px; overflow: visible; filter: drop-shadow(0 0 5px #8be2e32b); }
+.aura-orbit { transform-origin: 32px 33px; animation: aura-hover 5s ease-in-out infinite; }
+.aura-gaze { animation: aura-gaze 8s ease-in-out infinite; }
+@keyframes aura-hover { 50% { transform: translateY(-2px); opacity: .8; } }
+@keyframes aura-gaze { 0%, 46%, 50%, 100% { opacity: 1; } 48% { opacity: .25; } }
+#tutorial-overlay { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
+#tutorial-overlay[hidden] { display: none; }
+.tutorial-shade { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.tutorial-shade path { fill: #020d1b66; fill-rule: evenodd; }
+.tutorial-shade.practice-shade path { fill: #020d1b08; }
+#tutorial-focus { position: absolute; border: 2px solid #a4ece5; box-shadow: 0 0 0 3px #78e4dd22, 0 0 20px #84ded82b; pointer-events: none; }
+#tutorial-panel { position: absolute; pointer-events: auto; padding: 17px; background: linear-gradient(120deg, #173645f5, #102733f7); border: 1px solid #6ba5b3; border-left: 3px solid #9be7df; border-radius: 13px 4px 13px 4px; box-shadow: 0 12px 30px #020b1844; max-height: calc(100dvh - 32px); overflow: auto; animation: tutorial-arrive .22s ease-out; }
+@keyframes tutorial-arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+#tutorial-copy { display: flex; align-items: flex-start; gap: 12px; }
+#tutorial-copy .aura-hologram { width: 43px; flex-basis: 43px; }
+.tutorial-eyebrow { display: block; font: 10px monospace; letter-spacing: 1px; color: #8dd5d9; }
+#tutorial-copy h2 { font: 600 17px/1.3 "Segoe UI", Arial, sans-serif; margin: 7px 0; color: #e2f2e9; }
+#tutorial-copy p { font: 13px/1.6 "Segoe UI", Arial, sans-serif; margin: 0; color: #bfd6db; }
+#tutorial-copy small { display: block; font: 9px/1.5 monospace; margin-top: 11px; color: #b9c8a6; }
+#tutorial-panel nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0 0 55px; }
+#tutorial-panel nav button { min-height: 36px; padding: 7px 10px; border: 1px solid #699ba8; border-radius: 5px; font: 12px "Segoe UI", Arial, sans-serif; color: #d2ebe8; background: #244854; }
+#tutorial-panel nav #tutorial-next { background: #315a60; border-color: #8ccfc8; }
+#tutorial-panel nav #tutorial-skip { background: none; border-color: transparent; color: #a9c3cc; margin-left: auto; padding-right: 0; }
+#tutorial-panel nav button:disabled { cursor: default; color: #b5c7cd; opacity: .65; }
+#tutorial-panel nav button:focus-visible { outline: 2px solid #e9c894; outline-offset: 3px; }
+#tutorial-walk-hint { position: absolute; transform: translate(-50%, -50%); color: #d5eee8; background: #0c2936dc; padding: 6px 10px; border: 1px solid #85c2c9; border-radius: 5px; font: 11px monospace; white-space: nowrap; }
+.tutorial-map-focus { stroke: #ccebc8; stroke-width: 14px; fill: #426c70; }
+#resource-help { position: absolute; z-index: 25; pointer-events: auto; padding: 17px; background: #112c3af5; border: 1px solid #6c9fac; border-top: 2px solid #9bdcd7; border-radius: 8px; box-shadow: 0 10px 28px #03132066; max-height: min(360px, calc(100dvh - 32px)); overflow: auto; }
+#resource-help[hidden] { display: none; }
+#resource-help-copy > strong { display: flex; gap: 15px; justify-content: space-between; padding-right: 14px; font: 600 14px "Segoe UI", Arial, sans-serif; color: #def2e8; }
+#resource-help-copy strong b { font-family: monospace; color: #e7c38d; white-space: nowrap; }
+#resource-help-copy p { font: 12px/1.6 "Segoe UI", Arial, sans-serif; color: #b7cfd6; margin: 10px 0; }
+#resource-help-copy em { font-style: normal; color: #d5e9df; }
+#resource-help-copy small { font: 10px/1.5 monospace; color: #91b9c2; }
+#close-resource-help { position: absolute; right: 4px; top: 4px; color: #c5e9e2; font-size: 20px; width: 28px; height: 28px; }
+@media (max-width: 700px) { #tutorial-copy p { font-size: 12px; } #tutorial-panel nav { margin-left: 0; } .aura-message .aura-hologram { width: 35px; flex-basis: 35px; } }
+@media (prefers-reduced-motion: reduce) { .aura-hologram *, #tutorial-panel { animation: none !important; transition: none !important; } }

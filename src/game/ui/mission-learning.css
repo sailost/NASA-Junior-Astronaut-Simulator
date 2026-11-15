@@ -1,0 +1,29 @@
+﻿#modal.mission-lesson { width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); overflow-y: auto; box-sizing: border-box; padding: 24px; border: 1px solid #6298a26b; border-top: 2px solid #9ddbcf; border-radius: 12px 4px; background: linear-gradient(135deg,#153340,#0c202c); color: #cfdfdf; box-shadow: 0 18px 60px #020b1870; }
+.mission-lesson-header { display: grid; grid-template-columns: 52px minmax(0,1fr); align-items: center; gap: 14px; }
+.mission-lesson-header .aura-portrait { width: 52px; height: 68px; }
+.lesson-complete { color: #a3d9bc; font: 10px/1.4 monospace; letter-spacing: 1px; }
+#modal.mission-lesson h2 { color: #edf0e5; font: 600 21px/1.3 "Segoe UI",Arial,sans-serif; margin: 6px 0 0; }
+.lesson-copy { margin: 18px 0; }
+.lesson-speaker { color: #88c9cc; font: 10px monospace; letter-spacing: 2px; }
+#modal.mission-lesson p { font-size: 15px; line-height: 1.6; margin: 7px 0 0; }
+.lesson-next { border-left: 2px solid #d2ba8b; padding: 1px 0 1px 14px; margin-bottom: 20px; }
+#modal.mission-lesson .lesson-next h3 { color: #d8c69f; font-size: 12px; font-weight: 600; margin: 0; }
+#modal.mission-lesson .lesson-next p { color: #e2e9e4; font-size: 14px; }
+.lesson-extras { border-top: 1px solid #6b9aa32e; }
+.lesson-extras details { border-bottom: 1px solid #6b9aa32e; }
+.lesson-extras summary { cursor: pointer; color: #a4c5ce; font-size: 12px; padding: 12px 0; }
+.lesson-extras summary:hover { color: #e0ede8; }
+#modal.mission-lesson .lesson-extras p { font-size: 13px; line-height: 1.6; color: #aebfc6; margin: 0 0 12px; }
+.lesson-source a { display: inline-block; font-size: 12px; color: #9dd5d9; text-decoration: underline; text-underline-offset: 3px; }
+.lesson-source small { display: block; color: #829da8; font-size: 10px; line-height: 1.5; margin: 8px 0 14px; }
+.lesson-footer { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 18px; padding-top: 18px; }
+.lesson-reading progress { display: block; width: 100%; height: 3px; accent-color: #9ccfbe; }
+.lesson-reading span { display: block; color: #90aeb7; font-size: 10px; line-height: 1.4; margin-top: 6px; }
+#lesson-continue { min-width: 146px; min-height: 42px; padding: 10px 18px; border: 1px solid #8fc8ba; border-radius: 4px; background: #285357; color: #e4f1e7; font-size: 13px; }
+#lesson-continue:hover:not(:disabled) { background: #35676a; }
+#lesson-continue:disabled { opacity: .6; cursor: default; }
+.lesson-extras summary:focus-visible, #lesson-continue:focus-visible, .lesson-source a:focus-visible { outline: 2px solid #e6d19d; outline-offset: 3px; }
+#mission-pressure { display: block; color: #f2c58e; font: 600 11px/1.5 monospace; margin-top: 10px; }
+#mission-pressure[hidden] { display: none; }
+#modal.mission-lesson .lesson-knowledge { color: #bbd5d8; margin-top: 14px; }
+@media (max-width:600px) { #modal.mission-lesson { padding: 20px; }.lesson-footer { grid-template-columns: 1fr; gap: 12px; }#lesson-continue { width: 100%; } }

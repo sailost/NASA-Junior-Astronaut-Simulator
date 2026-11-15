@@ -1,0 +1,15 @@
+SOL-3: Base Aurora - Prólogo ilustrado (3 páginas)
+
+Orden narrativo:
+1. prologo-01-marte.png - Presentación de Marte, colonia y cuatro astronautas.
+2. prologo-02-tripulacion.png - Conversación de la tripulación y AURA sobre los recursos.
+3. prologo-03-primera-mision.png - AURA presenta la primera misión del invernadero.
+
+Carpeta de destino en Vite/Phaser:
+public/assets/story/intro/
+
+En la página 3, COMENZAR MISIÓN está dibujado dentro de la imagen: NO es un botón HTML. Codex debe colocar una zona interactiva transparente sobre el rectángulo (aprox. x 65%-97%, y 77%-92% de la imagen), ajustada al encuadre y la escala real, con soporte de teclado/foco.
+
+Estas imágenes contienen texto integrado. No agregar nuevamente diálogos encima. Si se requieren textos editables en el futuro, usar una versión sin texto.
+
+El cómic es ficción y no afirma la pertenencia oficial de la colonia a NASA. No alterar lógica del motor, misiones ni recursos.

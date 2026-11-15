@@ -1,0 +1,97 @@
+/* Original code-drawn portrait and RPG controls; the reference image is never an interface layer. */
+.aura-portrait { color: #79e4f3; filter: drop-shadow(0 0 5px #55cfe850); }
+.aura-bust { transform-origin: 60px 140px; animation: aura-breathe 5s ease-in-out infinite; }
+.aura-projector { animation: aura-project 4s ease-in-out infinite; }
+.aura-eye { transform-box: fill-box; transform-origin: center; animation: aura-blink 7s linear infinite; }
+.aura-scanline { animation: aura-scan 6s ease-in-out infinite; }
+.aura-talk-mouth, .aura-happy-eyes, .aura-thinking-hand, .aura-thoughts, .aura-warning, .aura-waveform { display: none; }
+.aura-portrait[data-mood="talking"] .aura-mouth { display: none; }
+.aura-portrait[data-mood="talking"] .aura-talk-mouth { display: block; transform-box: fill-box; transform-origin: center; animation: aura-speak .28s ease-in-out infinite alternate; }
+.aura-portrait[data-mood="talking"] .aura-waveform { display: block; }
+.aura-waveform rect { transform-box: fill-box; transform-origin: bottom; animation: aura-voice .45s ease-in-out infinite alternate; }
+.aura-waveform rect:nth-child(2n) { animation-delay: -.22s; }
+.aura-portrait[data-mood="thinking"] .aura-thinking-hand, .aura-portrait[data-mood="thinking"] .aura-thoughts { display: block; }
+.aura-thoughts circle { animation: aura-thought 1.5s ease-in-out infinite; }.aura-thoughts circle:nth-child(2) { animation-delay: .3s; }.aura-thoughts circle:nth-child(3) { animation-delay: .6s; }
+.aura-portrait[data-mood="happy"] .aura-eyes { display: none; }.aura-portrait[data-mood="happy"] .aura-happy-eyes { display: block; }
+.aura-portrait[data-mood="happy"] .aura-bust { animation: aura-happy 1.5s ease-in-out infinite; }
+.aura-portrait[data-mood="alert"] { color: #e4c17f; }.aura-portrait[data-mood="emergency"] { color: #f1a5b6; }
+.aura-portrait[data-mood="alert"] .aura-warning, .aura-portrait[data-mood="emergency"] .aura-warning { display: block; }
+.aura-portrait[data-mood="emergency"] .aura-warning { animation: aura-thought 1.8s ease-in-out infinite; }
+.aura-portrait[data-mood="alert"] .aura-brows, .aura-portrait[data-mood="emergency"] .aura-brows { transform: translateY(-2px); }
+@keyframes aura-breathe { 50% { transform: translateY(-2px); } }
+@keyframes aura-project { 50% { opacity: .5; } }
+@keyframes aura-blink { 0%, 45%, 49%, 100% { transform: scaleY(1); } 47% { transform: scaleY(.08); } }
+@keyframes aura-speak { to { transform: scaleY(.3); } }
+@keyframes aura-voice { to { transform: scaleY(.35); } }
+@keyframes aura-thought { 50% { opacity: .35; } }
+@keyframes aura-happy { 50% { transform: translateY(-3px) rotate(1.5deg); } }
+@keyframes aura-scan { 50% { transform: translateY(-75px); opacity: .15; } }
+#aura-companion { position: absolute; inset: 0; pointer-events: none; z-index: 8; font-family: "Segoe UI", Arial, sans-serif; }
+#aura-companion[hidden], #aura-conversation[hidden], #aura-intro-replies[hidden] { display: none; }
+#aura-call { position: absolute; left: 18px; bottom: 17px; width: 76px; padding: 0; pointer-events: auto; background: none; text-align: center; color: #9be8ec; border-radius: 8px; }
+#aura-call > .aura-portrait { display: block; width: 72px; height: 90px; margin: auto; }
+#aura-call > span { display: block; font: 10px monospace; letter-spacing: 1.5px; margin: 2px 0 3px; }
+#aura-call kbd { background: none; padding: 1px 3px; border: 1px solid #77b2bd66; color: #d6e9df; font: 9px monospace; }
+#aura-presence { display: block; font-size: 9px; color: #9abdc4; }
+#aura-call:hover .aura-portrait { filter: drop-shadow(0 0 8px #5cddf17a); }
+#aura-companion[data-mood="alert"] #aura-presence { color: #f0c58b; }
+#aura-companion[data-mood="emergency"] #aura-presence { color: #f5b0bd; }
+#aura-conversation { position: absolute; left: 22px; bottom: 145px; width: min(420px, calc(100vw - 44px)); max-height: min(490px, calc(100dvh - 225px)); display: flex; flex-direction: column; padding: 15px; pointer-events: auto; background: linear-gradient(135deg, #163b4af5, #0a202df8); border: 1px solid #75b6c4; border-top: 2px solid #91e9e9; border-radius: 14px 3px 14px 3px; box-shadow: 0 10px 35px #03111f66, inset 0 0 0 4px #14313e; animation: aura-open .2s ease-out; }
+#aura-conversation > header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #7dbac443; padding: 0 0 9px; color: #b5e4e5; font: 10px monospace; letter-spacing: 1px; flex-shrink: 0; }
+#aura-close { width: 32px; height: 28px; color: #cceee7; font-size: 24px; padding: 0; }
+.aura-dialogue-scene { display: grid; grid-template-columns: 82px 1fr; gap: 12px; overflow-y: auto; min-height: 115px; padding: 13px 2px 10px; }
+.aura-dialogue-portrait { align-self: start; position: sticky; top: 0; text-align: center; }.aura-dialogue-portrait .aura-portrait { width: 82px; height: 108px; }.aura-dialogue-portrait small { display: block; font: 9px monospace; color: #a0cdd0; }
+#aura-dialogue-title { margin: 2px 0 8px; font-size: 16px; font-weight: 600; color: #e5f0e9; line-height: 1.35; }
+#aura-dialogue-text { color: #bfd6dc; font-size: 13px; line-height: 1.65; margin: 0; }
+#aura-dialogue-sources a { display: block; color: #9ce3e6; font-size: 11px; line-height: 1.5; margin-top: 11px; text-decoration: underline; text-underline-offset: 3px; }
+#aura-replies { display: grid; gap: 6px; margin-top: 5px; flex-shrink: 0; }
+#aura-replies button, #aura-intro-replies button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 36px; text-align: left; padding: 8px 10px; border: 1px solid #578e9f; border-left: 2px solid #83dbdf; border-radius: 5px 1px; background: linear-gradient(95deg, #204655, #153440); color: #d7eae7; font-size: 12px; line-height: 1.4; }
+#aura-replies button:hover, #aura-intro-replies button:hover { border-color: #b9eee5; background: #2b5260; }
+#aura-replies button kbd { color: #9cc8cf; font: 10px monospace; background: none; padding: 0; }
+#aura-replies button b { margin-left: auto; color: #97dedc; font-size: 17px; font-weight: 400; }
+#aura-replies button:focus-visible, #aura-call:focus-visible, #aura-intro-replies button:focus-visible { outline: 2px solid #edd09b; outline-offset: 3px; }
+#aura-conversation > footer { font-size: 9px; color: #85adb8; margin-top: 10px; flex-shrink: 0; }
+@media (max-height: 650px) { #aura-conversation { overflow-y: auto; }.aura-dialogue-scene { overflow-y: visible; flex-shrink: 0; } }
+@keyframes aura-open { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.exploration-hud .aura-message { left: 103px; bottom: 22px; max-width: 340px; padding: 10px 12px; border-color: #72b8c15c; border-left: 2px solid #87dfde; border-radius: 8px 2px 8px 2px; }
+.aura-message .aura-portrait { width: 40px; height: 53px; flex-basis: 40px; }
+.aura-message > div { min-width: 0; }.aura-message strong { font-size: 9px; color: #98d8dd; }.aura-message p { font-size: 12px; line-height: 1.5; }
+#aura-intro-replies { display: grid; gap: 7px; margin: 14px 0 0 55px; }
+#aura-discovery { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(600px, calc(100% - 32px)); box-sizing: border-box; max-height: calc(100% - 32px); overflow-y: auto; padding: 24px; background: linear-gradient(135deg, #173b4afc, #0a202dfc); border: 1px solid #8ad9df; border-top: 2px solid #b9e9db; border-radius: 14px 4px; box-shadow: 0 16px 50px #03132080; pointer-events: auto; z-index: 1; animation: aura-welcome-arrive .25s ease-out; }
+#aura-discovery[hidden] { display: none; }
+#aura-discovery strong { color: #d5f0e6; font-size: 14px; font-weight: 600; }
+#aura-discovery p { color: #bcd4dc; font-size: 13px; line-height: 1.6; margin: 9px 0 12px; }
+#aura-discovery kbd { color: #e5d2a6; font: 12px monospace; }
+#aura-discovery button { display: block; width: 100%; min-height: 36px; padding: 8px; font-size: 12px; border: 1px solid #78b7c2; border-radius: 4px; background: #254957; color: #d5ede7; }
+#aura-discovery #aura-discovery-dismiss { background: none; border-color: transparent; color: #a7c2cc; margin-top: 4px; }
+.aura-welcoming::before { content: ""; position: absolute; inset: 0; background: #03152280; }
+.aura-welcoming #aura-call { visibility: hidden; }
+.aura-welcome-heading { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 18px; }
+.aura-welcome-heading > .aura-portrait { width: 96px; height: 125px; }
+.aura-welcome-heading > div > span { color: #8bcbd3; font: 10px monospace; letter-spacing: 1px; }
+#aura-discovery h2 { color: #e2f2e9; font: 600 24px/1.25 "Segoe UI", Arial, sans-serif; margin: 8px 0; }
+.aura-welcome-resources { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 18px 0 12px; }
+#aura-discovery .aura-welcome-resources button, #tutorial-copy .aura-welcome-resources button { display: flex; flex-direction: column; gap: 5px; text-align: left; padding: 11px; border: 1px solid #548e9f80; border-radius: 6px 2px; background: #193e4c; color: #bcd4dc; font: 12px/1.5 "Segoe UI", Arial, sans-serif; }
+#aura-discovery .aura-welcome-resources strong, #tutorial-copy .aura-welcome-resources strong { color: #b6eeea; font: 600 13px/1.4 "Segoe UI", Arial, sans-serif; }
+#aura-discovery .aura-welcome-resources button:hover, #tutorial-copy .aura-welcome-resources button:hover { border-color: #b5e6d9; background: #285461; }
+#aura-discovery button:focus-visible, #tutorial-copy .aura-welcome-resources button:focus-visible { outline: 2px solid #edd09b; outline-offset: 2px; }
+#aura-discovery .aura-welcome-help, #tutorial-copy .aura-welcome-help { color: #a8ccd3; font: 12px/1.6 "Segoe UI", Arial, sans-serif; margin: 10px 0 16px; }
+.aura-welcome-tutorial #tutorial-copy { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 0 18px !important; }
+.aura-welcome-tutorial #tutorial-copy > .aura-portrait { width: 96px; height: 125px; }
+.aura-welcome-tutorial #tutorial-copy h2 { font-size: 24px; }
+.aura-welcome-tutorial #tutorial-copy > .aura-welcome-resources, .aura-welcome-tutorial #tutorial-copy > .aura-welcome-help { grid-column: 1 / -1; }
+.aura-welcome-tutorial #aura-intro-replies, .aura-welcome-tutorial #tutorial-panel nav { margin-left: 0; }
+@keyframes aura-welcome-arrive { from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)); } to { opacity: 1; transform: translate(-50%, -50%); } }
+#aura-intro-ask { border-color: #b5e6d9 !important; background: #2a5660 !important; }
+.suit-readings .aura-resource-focus { outline: 2px solid #a7e5d9; outline-offset: 6px; border-radius: 3px; box-shadow: 0 0 15px #82e0df28; }
+#tutorial-copy .aura-portrait { width: 64px; height: 82px; flex-basis: 64px; }
+#tutorial-panel:has(#aura-intro-replies:not([hidden])) #tutorial-copy { gap: 14px; }
+@media (max-width: 760px) {
+  #aura-discovery { padding: 18px; }
+  .aura-welcome-resources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #aura-call { left: 10px; bottom: 12px; width: 58px; }#aura-call > .aura-portrait { width: 56px; height: 70px; }
+  #aura-conversation { left: 12px; bottom: 120px; width: min(385px, calc(100vw - 24px)); max-height: calc(100dvh - 245px); padding: 12px; }
+  .exploration-hud .aura-message { left: 78px; bottom: 15px; max-width: min(310px, calc(100vw - 100px)); }
+  .aura-dialogue-scene { grid-template-columns: 62px 1fr; gap: 9px; }.aura-dialogue-portrait .aura-portrait { width: 62px; height: 80px; }
+}
+@media (prefers-reduced-motion: reduce) { .aura-portrait *, #aura-conversation, #aura-discovery { animation: none !important; transition: none !important; } }

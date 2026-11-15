@@ -1,0 +1,7 @@
+import type { SampleId } from "../systems/Expedition";
+export const plantArt = () => `<svg viewBox="0 0 100 130" class="plant-specimen" aria-hidden="true"><path d="M50 110V40M50 82 26 61M50 68l24-25" stroke="#94b795" stroke-width="4" fill="none"/><path d="M49 74Q12 77 18 43q28-1 31 31" fill="#60b49d" stroke="#b6dd9e"/><path d="M51 59q-2-35 31-37 9 30-31 37" fill="#9ac481" stroke="#cdf0ab"/><path d="M49 43Q27 20 50 8q20 16-1 35" fill="#87d6b1"/><ellipse cx="50" cy="114" rx="29" ry="8" fill="#112b35"/><path d="M22 110h56l-5 15H27z" fill="#45626b" stroke="#7da0a1"/></svg>`;
+export function specimenArt(sample: SampleId) {
+  if (sample === "plant") return plantArt();
+  if (sample === "water") return `<svg viewBox="0 0 100 130" aria-hidden="true"><path d="M37 15h26v18l7 13v66q-20 14-40 0V46l7-13z" fill="#183d51" stroke="#93d8df" stroke-width="3"/><path d="M34 63q16 8 32 0v45q-16 12-32 0z" fill="#55cddd" opacity=".7"/><circle cx="47" cy="83" r="4" fill="#a3eff3"/><circle cx="57" cy="96" r="2" fill="#a3eff3"/><path d="M34 14h32" stroke="#e9b879" stroke-width="5"/></svg>`;
+  return `<svg viewBox="0 0 100 130" aria-hidden="true"><ellipse cx="50" cy="110" rx="39" ry="10" fill="#153342"/><path d="m14 94 13-35 32-18 24 31 5 30-45 9z" fill="#a16d54" stroke="#efbb88" stroke-width="2"/><path d="m27 59 16 35 16-53M43 94l40-22M43 94v17" stroke="#5e4640" stroke-width="3" fill="none"/><path d="m30 64 12 18-2-15z" fill="#dca276"/></svg>`;
+}
