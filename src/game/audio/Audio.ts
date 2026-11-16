@@ -3,6 +3,12 @@ type SoundId =
   | "dia" | "exito" | "fallo" | "noche" | "paso" | "puerta"
   | "recoleccion" | "reparacion" | "transmision";
 type ToneId = "click" | "step" | "success" | "alert" | "failure";
+export type MusicTrack = "sol1" | "sol2" | "sol3";
+const musicFiles: Record<MusicTrack, string> = {
+  sol1: "Sol-1.mp3",
+  sol2: "sol2.mp3",
+  sol3: "Sol3.mp3",
+};
 const files: SoundId[] = ["advertencia", "alarma", "ambiente_estacion", "chispa", "click", "dia", "exito", "fallo", "noche", "paso", "puerta", "recoleccion", "reparacion", "transmision"];
 const toneFile: Record<ToneId, SoundId> = { click: "click", step: "paso", success: "exito", alert: "advertencia", failure: "fallo" };
 
@@ -15,6 +21,14 @@ export class StationAudio {
   private loading?: Promise<void>;
   private ambience?: AudioBufferSourceNode;
   private ambienceGain?: GainNode;
+  private musicTrack?: MusicTrack;
+  private musicSource?: AudioBufferSourceNode;
+  private musicGain?: GainNode;
+  private musicBuffer?: AudioBuffer;
+  private musicRequest = 0;
+  private musicLoadingRequest = -1;
+  private musicSilent = false;
+  private musicVolume = 0.2;
 
   constructor() {
     const base = import.meta.env?.BASE_URL || "./";
@@ -34,6 +48,76 @@ export class StationAudio {
       this.loading = this.loadBuffers();
     }
     void this.context.resume();
+    this.resumeMusic();
+  }
+
+  setMusic(track: MusicTrack | undefined, silent = false) {
+    this.musicSilent = silent;
+    if (this.musicTrack !== track) {
+      this.musicTrack = track;
+      this.musicRequest++;
+      this.musicLoadingRequest = -1;
+      this.stopMusic();
+    }
+    this.loadSelectedMusic();
+    this.applyMusicGain();
+  }
+
+  private loadSelectedMusic() {
+    const track = this.musicTrack;
+    const context = this.context;
+    if (!track || !context || !this.master || this.musicSource || this.musicLoadingRequest === this.musicRequest) return;
+    const request = this.musicRequest;
+    this.musicLoadingRequest = request;
+    const base = import.meta.env?.BASE_URL || "./";
+    void fetch(`${base}assets/music/${musicFiles[track]}`)
+      .then((response) => {
+        if (!response.ok) throw new Error(`No se pudo cargar ${musicFiles[track]}`);
+        return response.arrayBuffer();
+      })
+      .then((data) => context.decodeAudioData(data))
+      .then((buffer) => {
+        if (request !== this.musicRequest || track !== this.musicTrack || !this.master) return;
+        const source = context.createBufferSource();
+        const gain = context.createGain();
+        source.buffer = buffer;
+        source.loop = true;
+        gain.gain.value = 0;
+        source.connect(gain).connect(this.master);
+        this.musicBuffer = buffer;
+        this.musicSource = source;
+        this.musicGain = gain;
+        source.start();
+        this.applyMusicGain();
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (this.musicLoadingRequest === request) this.musicLoadingRequest = -1;
+      });
+  }
+
+  private applyMusicGain() {
+    if (!this.musicGain || !this.context) return;
+    const level = this.muted || this.musicSilent ? 0 : this.musicVolume;
+    const param = this.musicGain.gain;
+    param.cancelScheduledValues(this.context.currentTime);
+    param.setTargetAtTime(level, this.context.currentTime, 0.45);
+  }
+
+  private stopMusic() {
+    if (this.musicSource) {
+      try { this.musicSource.stop(); } catch { /* The source may already have ended. */ }
+      this.musicSource.disconnect();
+    }
+    this.musicGain?.disconnect();
+    this.musicSource = undefined;
+    this.musicGain = undefined;
+    this.musicBuffer = undefined;
+  }
+
+  private resumeMusic() {
+    this.loadSelectedMusic();
+    this.applyMusicGain();
   }
 
   private async loadBuffers() {
@@ -64,6 +148,7 @@ export class StationAudio {
     localStorage.setItem("aurora-muted", String(this.muted));
     this.menuConfirm.muted = this.muted;
     if (this.master && this.context) this.master.gain.setTargetAtTime(this.muted ? 0 : 0.8, this.context.currentTime, 0.04);
+    this.applyMusicGain();
   }
 
   /** Persona's confirm click is reserved for buttons on the title menu. */

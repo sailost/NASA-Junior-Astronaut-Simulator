@@ -35,7 +35,7 @@ const game = new Phaser.Game({
   audio: { noAudio: true },
   render: { roundPixels: false },
 });
-window.addEventListener("pagehide", () => audio.context?.suspend());
+window.addEventListener("pagehide", () => audio.suspend());
 if (import.meta.env.PROD && "serviceWorker" in navigator)
   window.addEventListener("load", () => {
     void navigator.serviceWorker

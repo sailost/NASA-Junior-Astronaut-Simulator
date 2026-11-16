@@ -23,7 +23,7 @@ import {
 } from "../systems/Simulation";
 import type { BaseScene } from "../scenes/BaseScene";
 import { rooms, stations, type Station } from "../world/map";
-import { StationAudio } from "../audio/Audio";
+import { StationAudio, type MusicTrack } from "../audio/Audio";
 import { Minigame, type PuzzleKind } from "../minigames/Minigame";
 import {
   loadScience,
@@ -102,6 +102,7 @@ export class Interface {
   }
   private science?: ScienceData;
   private screen = "menu";
+  private musicState = "";
   private returnScreen = "game";
   private lastFocus?: HTMLElement;
   private trackedId?: string;
@@ -309,7 +310,10 @@ export class Interface {
     });
     this.root.addEventListener("click", (e) => {
       if (!(e.target as HTMLElement).closest("button")) return;
-      if (this.screen === "menu") this.audio.playMenuConfirm();
+      if (this.screen === "menu") {
+        this.audio.unlock();
+        this.audio.playMenuConfirm();
+      }
       else this.audio.tone();
     }, true);
     this.root.addEventListener("click", (e) => {
@@ -510,6 +514,8 @@ export class Interface {
   }
   private openPrologue() {
     this.show("prologue", "", true);
+    this.audio.setMusic("sol1", true);
+    this.musicState = "sol1:true";
     this.layer.classList.add("prologue-layer"); this.modal.className = "prologue-modal";
     this.modal.setAttribute("aria-label", "Cinemática de introducción de Base Aurora");
     this.cinematic = new CampaignCinematic(this.modal, {
@@ -853,7 +859,20 @@ export class Interface {
   private formatTime(t: number) {
     return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
   }
+  private syncBackgroundMusic() {
+    const level = this.sim.campaign?.level ?? this.sim.sol;
+    const musicScreens: string[] = ["game", "terminal", "puzzle", "result", "lesson", "end", "prologue", "story"];
+    const track: MusicTrack | undefined = musicScreens.includes(this.screen)
+      ? level >= 3 ? "sol3" : level === 2 ? "sol2" : "sol1"
+      : undefined;
+    const silent = this.screen === "prologue" || this.screen === "story";
+    const state = `${track || "none"}:${silent}`;
+    if (state === this.musicState) return;
+    this.musicState = state;
+    this.audio.setMusic(track, silent);
+  }
   update() {
+    this.syncBackgroundMusic();
     if (this.screen === "lesson") return;
     if (this.options.lessons !== false && this.sim.campaign && ["game", "terminal", "result"].includes(this.screen)) {
       this.learning.observe(this.sim);
