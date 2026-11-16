@@ -3,6 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "aiDisclosure": {
+    "tool": "OpenAI Codex",
+    "uses": [
+      "research and source interpretation",
+      "data interpretation",
+      "coding and debugging",
+      "interface layout",
+      "writing, editing, and translation"
+    ],
+    "runtimeAI": false
+  },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build && node scripts/build-offline.mjs",

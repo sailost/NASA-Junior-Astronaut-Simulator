@@ -2,6 +2,11 @@
   "schemaVersion": 1,
   "checkedAt": "2026-11-15T15:47:59Z",
   "mode": "historical-curated",
+  "aiDisclosure": {
+    "tool": "OpenAI Codex",
+    "assistance": "Research, interpretation, and documentation of NASA-sourced science context.",
+    "rawMeasurementsGeneratedByAI": false
+  },
   "solarEvents": [],
   "radiation": {
     "status": "verified",

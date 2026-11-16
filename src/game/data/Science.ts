@@ -12,6 +12,11 @@ export interface ScienceData {
   schemaVersion: number;
   checkedAt: string;
   mode: string;
+  aiDisclosure?: {
+    tool: string;
+    assistance: string;
+    rawMeasurementsGeneratedByAI: boolean;
+  };
   solarEvents: SolarRecord[];
   radiation: {
     status: string;
